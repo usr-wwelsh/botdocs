@@ -1,0 +1,59 @@
+{
+  "name": "botdocs",
+  "version": "0.1.0",
+  "description": "An npm CLI tool that converts markdown documentation into a static website with an optional client-side AI chatbot",
+  "author": "usr-wwelsh <https://wwel.sh>",
+  "license": "MIT",
+  "bin": {
+    "botdocs": "./bin/botdocs.js"
+  },
+  "main": "./dist/src/cli/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "build:client": "vite build",
+    "dev": "tsc --watch",
+    "prepublishOnly": "npm run build && npm run build:client"
+  },
+  "keywords": [
+    "documentation",
+    "markdown",
+    "static-site",
+    "ai",
+    "chatbot",
+    "rag",
+    "llm",
+    "cli"
+  ],
+  "dependencies": {
+    "commander": "^12.0.0",
+    "markdown-it": "^14.0.0",
+    "markdown-it-front-matter": "^0.2.4",
+    "markdown-it-anchor": "^9.0.0",
+    "markdown-it-toc-done-right": "^4.2.0",
+    "@shikijs/markdown-it": "^1.0.0",
+    "shiki": "^1.0.0",
+    "@xenova/transformers": "^2.17.0",
+    "@mlc-ai/web-llm": "^0.2.0",
+    "@wllama/wllama": "^1.5.0",
+    "gray-matter": "^4.0.3",
+    "glob": "^11.0.0",
+    "fs-extra": "^11.2.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.0",
+    "vite": "^6.0.0",
+    "terser": "^5.36.0",
+    "@types/node": "^20.11.0",
+    "@types/markdown-it": "^13.0.0",
+    "@types/fs-extra": "^11.0.4"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/usr-wwelsh/botdocs.git"
+  },
+  "homepage": "https://wwel.sh"
+}

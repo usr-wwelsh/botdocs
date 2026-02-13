@@ -1,0 +1,27 @@
+<article class="doc-page">
+  {{#if metadata.date}}
+  <div class="doc-meta">
+    <time datetime="{{metadata.date}}">{{metadata.date}}</time>
+    {{#if metadata.author}}
+    <span class="doc-author">by {{metadata.author}}</span>
+    {{/if}}
+  </div>
+  {{/if}}
+
+  <div class="doc-content">
+    {{html}}
+  </div>
+
+  <nav class="doc-navigation">
+    {{#if prevPage}}
+    <a href="{{prevPage.url}}" class="nav-prev">
+      ← {{prevPage.title}}
+    </a>
+    {{/if}}
+    {{#if nextPage}}
+    <a href="{{nextPage.url}}" class="nav-next">
+      {{nextPage.title}} →
+    </a>
+    {{/if}}
+  </nav>
+</article>

@@ -1,0 +1,28 @@
+<div class="home-page">
+  <header class="home-header">
+    <h1>{{title}}</h1>
+    {{#if description}}
+    <p class="lead">{{description}}</p>
+    {{/if}}
+  </header>
+
+  <section class="home-content">
+    {{html}}
+  </section>
+
+  {{#if pages}}
+  <section class="quick-links">
+    <h2>Documentation</h2>
+    <div class="link-grid">
+      {{#each pages}}
+      <a href="{{url}}" class="link-card">
+        <h3>{{title}}</h3>
+        {{#if description}}
+        <p>{{description}}</p>
+        {{/if}}
+      </a>
+      {{/each}}
+    </div>
+  </section>
+  {{/if}}
+</div>

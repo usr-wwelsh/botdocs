@@ -1,0 +1,37 @@
+/* Dark theme colors */
+[data-theme='dark'] {
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #2d2d2d;
+  --bg-tertiary: #404040;
+  --text-primary: #e4e4e7;
+  --text-secondary: #a1a1aa;
+  --border-color: #404040;
+  --link-color: #60a5fa;
+  --link-hover: #93c5fd;
+  --code-bg: #2d2d2d;
+}
+
+/* Smooth theme transition */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Prevent transition on initial load */
+.no-transition * {
+  transition: none !important;
+}
+
+/* System preference detection */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg-primary: #1a1a1a;
+    --bg-secondary: #2d2d2d;
+    --bg-tertiary: #404040;
+    --text-primary: #e4e4e7;
+    --text-secondary: #a1a1aa;
+    --border-color: #404040;
+    --link-color: #60a5fa;
+    --link-hover: #93c5fd;
+    --code-bg: #2d2d2d;
+  }
+}

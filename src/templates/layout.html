@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="{{description}}">
+  <title>{{title}} - {{siteTitle}}</title>
+  <link rel="stylesheet" href="/assets/css/bundle.css">
+</head>
+<body>
+  <div class="layout">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h1 class="site-title">{{siteTitle}}</h1>
+        <p class="site-description">{{siteDescription}}</p>
+      </div>
+      <nav class="sidebar-nav">
+        {{navigation}}
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="content-wrapper">
+        {{content}}
+      </div>
+    </main>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" aria-label="Toggle dark mode">
+      <span class="theme-icon"></span>
+    </button>
+
+    {{#if chatEnabled}}
+    <!-- Chat Widget -->
+    <div class="chat-widget" id="chat-widget">
+      <button class="chat-toggle" id="chat-toggle" aria-label="Open chat">
+        <span class="chat-icon">💬</span>
+      </button>
+      <div class="chat-container" id="chat-container" style="display: none;">
+        <!-- Chat UI will be injected here -->
+      </div>
+    </div>
+    {{/if}}
+  </div>
+
+  <script type="module" src="/assets/js/bundle.js"></script>
+</body>
+</html>
