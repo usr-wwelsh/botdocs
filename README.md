@@ -86,7 +86,7 @@ botdocs ./test-docs
 
 ## Architecture
 
-- **Embedding Model**: `all-MiniLM-L6-v2` (384-dim vectors)
+- **Embedding Model**: `e5-small-v2` (384-dim vectors, 2.2x faster than all-MiniLM-L6-v2)
 - **Search**: Cosine similarity, client-side only
 - **Bundle Size**: ~825KB (includes Transformers.js)
 - **Deployment**: Fully static, works on any host

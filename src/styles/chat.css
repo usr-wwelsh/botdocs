@@ -62,11 +62,18 @@
   color: white;
 }
 
+.chat-header-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.chat-clear,
 .chat-close {
   background: none;
   border: none;
   color: white;
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   cursor: pointer;
   padding: 0;
   width: 2rem;
@@ -78,6 +85,11 @@
   transition: background-color 0.2s;
 }
 
+.chat-close {
+  font-size: 1.5rem;
+}
+
+.chat-clear:hover,
 .chat-close:hover {
   background: rgba(255, 255, 255, 0.2);
 }

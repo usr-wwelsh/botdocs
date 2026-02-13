@@ -101,7 +101,7 @@ When a user runs `botdocs ./docs`, the build process executes:
 
 When a user opens the generated site and uses the chatbot:
 
-1. Initialization: `embedder.ts` loads all-MiniLM-L6-v2 embedding model via Transformers.js (cached after first load)
+1. Initialization: `embedder.ts` loads e5-small-v2 embedding model via Transformers.js (cached after first load)
 2. User asks question → `embedder.ts` embeds query into 384-dim vector
 3. `vector-search.ts` searches `vector-db.json` via cosine similarity → retrieves top K most relevant chunks
 4. `rag-engine.ts` formats results into a conversational response → `chatbox.ts` displays with citations
@@ -166,7 +166,7 @@ CLI options (`--no-chat`, `-v`, `-o`) override config file settings.
 - `fs-extra`, `glob`: File operations
 
 ### Client-side (Browser)
-- Transformers.js: Loads models (Falcon H1 Tiny 90M, all-MiniLM-L6-v2)
+- Transformers.js: Loads e5-small-v2 embedding model (384-dim, 2.2x faster than all-MiniLM-L6-v2)
 - Bundled into single `bundle.js` via Vite
 
 Note: `@mlc-ai/web-llm` is listed in dependencies but may not be actively used - check `model-loader.ts` for current implementation.

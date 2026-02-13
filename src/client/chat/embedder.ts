@@ -12,7 +12,7 @@ export class ClientEmbedder {
   private modelName: string;
   private isLoading: boolean = false;
 
-  constructor(modelName: string = 'Xenova/all-MiniLM-L6-v2') {
+  constructor(modelName: string = 'Xenova/e5-small-v2') {
     this.modelName = modelName;
   }
 

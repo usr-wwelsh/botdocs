@@ -8,9 +8,9 @@ export class Embedder {
   private modelName: string;
   private dimension: number;
 
-  constructor(modelName: string = 'Xenova/all-MiniLM-L6-v2') {
+  constructor(modelName: string = 'Xenova/e5-small-v2') {
     this.modelName = modelName;
-    this.dimension = 384; // all-MiniLM-L6-v2 produces 384-dimensional embeddings
+    this.dimension = 384; // e5-small-v2 produces 384-dimensional embeddings
   }
 
   /**

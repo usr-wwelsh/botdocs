@@ -15,6 +15,8 @@ let messages: Message[] = [];
 
 const STORAGE_KEY = 'botdocs_chat_history';
 const STORAGE_OPEN_KEY = 'botdocs_chat_open';
+const STORAGE_TIMESTAMP_KEY = 'botdocs_chat_timestamp';
+const CACHE_EXPIRY_MS = 10 * 60 * 1000; // 10 minutes
 
 export function initChat(): void {
   const chatToggle = document.getElementById('chat-toggle');
@@ -62,8 +64,11 @@ export function toggleChat(): void {
 export function renderChatUI(container: HTMLElement): void {
   container.innerHTML = `
     <div class="chat-header">
-      <h3>💬 Ask me anything</h3>
-      <button class="chat-close" id="chat-close">×</button>
+      <h3>Ask me anything</h3>
+      <div class="chat-header-actions">
+        <button class="chat-clear" id="chat-clear" title="Clear chat history">🗑️</button>
+        <button class="chat-close" id="chat-close">×</button>
+      </div>
     </div>
     <div class="chat-status" id="chat-status">
       Initializing chat...
@@ -90,11 +95,16 @@ export function renderChatUI(container: HTMLElement): void {
 
   // Setup event listeners
   const closeButton = document.getElementById('chat-close');
+  const clearButton = document.getElementById('chat-clear');
   const sendButton = document.getElementById('chat-send');
   const input = document.getElementById('chat-input') as HTMLTextAreaElement;
 
   if (closeButton) {
     closeButton.addEventListener('click', toggleChat);
+  }
+
+  if (clearButton) {
+    clearButton.addEventListener('click', handleClearChat);
   }
 
   if (sendButton && input) {
@@ -142,6 +152,24 @@ async function initRAGEngine(): Promise<void> {
   } catch (error) {
     console.error('Failed to initialize RAG:', error);
     statusEl.textContent = '⚠️ Chat unavailable';
+  }
+}
+
+function handleClearChat(): void {
+  if (confirm('Clear chat history?')) {
+    clearChatHistory();
+
+    // Clear UI
+    const messagesContainer = document.getElementById('chat-messages');
+    if (messagesContainer) {
+      messagesContainer.innerHTML = `
+        <div class="chat-message assistant">
+          <div class="message-content">
+            👋 Hi! I'm your documentation assistant. Ask me anything about these docs!
+          </div>
+        </div>
+      `;
+    }
   }
 }
 
@@ -271,11 +299,12 @@ function escapeHtml(text: string): string {
 }
 
 /**
- * Save chat history to localStorage
+ * Save chat history to localStorage with timestamp
  */
 function saveChatHistory(): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+    localStorage.setItem(STORAGE_TIMESTAMP_KEY, Date.now().toString());
   } catch (error) {
     console.error('Failed to save chat history:', error);
   }
@@ -293,10 +322,23 @@ function saveChatOpenState(): void {
 }
 
 /**
- * Load chat state from localStorage
+ * Load chat state from localStorage (with expiration check)
  */
 function loadChatState(): void {
   try {
+    // Check if cache has expired
+    const timestamp = localStorage.getItem(STORAGE_TIMESTAMP_KEY);
+    const now = Date.now();
+
+    if (timestamp) {
+      const age = now - parseInt(timestamp, 10);
+      if (age > CACHE_EXPIRY_MS) {
+        // Cache expired, clear it
+        clearChatHistory();
+        return;
+      }
+    }
+
     // Load messages
     const savedMessages = localStorage.getItem(STORAGE_KEY);
     if (savedMessages) {
@@ -312,6 +354,19 @@ function loadChatState(): void {
     console.error('Failed to load chat state:', error);
     messages = [];
     isOpen = false;
+  }
+}
+
+/**
+ * Clear chat history from localStorage
+ */
+function clearChatHistory(): void {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(STORAGE_TIMESTAMP_KEY);
+    messages = [];
+  } catch (error) {
+    console.error('Failed to clear chat history:', error);
   }
 }
 
