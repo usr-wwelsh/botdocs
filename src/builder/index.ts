@@ -116,31 +116,6 @@ export async function build(options: BuildOptions): Promise<void> {
       if (verbose) {
         console.log('Client code copy complete');
       }
-
-      // Copy wllama files (JS, WASM, and worker files)
-      const wasmSourceDir = join(projectRoot, 'node_modules/@wllama/wllama/esm');
-      const wasmOutputDir = join(assetsDir, 'js', 'wasm');
-      fs.ensureDirSync(wasmOutputDir);
-
-      const wasmFiles = [
-        'single-thread/wllama.js',
-        'single-thread/wllama.wasm',
-        'multi-thread/wllama.js',
-        'multi-thread/wllama.wasm',
-        'multi-thread/wllama.worker.mjs',
-      ];
-
-      for (const wasmFile of wasmFiles) {
-        const srcPath = join(wasmSourceDir, wasmFile);
-        const destPath = join(wasmOutputDir, wasmFile);
-        if (existsSync(srcPath)) {
-          fs.ensureDirSync(dirname(destPath));
-          copyFileSync(srcPath, destPath);
-          if (verbose) {
-            console.log(`Copied ${wasmFile}`);
-          }
-        }
-      }
     } else if (verbose) {
       console.log(`dist-client directory not found: ${distClientDir}`);
     }
