@@ -12,6 +12,7 @@ export interface Message {
 
 let isOpen = false;
 let messages: Message[] = [];
+let isRAGInitialized = false;
 
 const STORAGE_KEY = 'botdocs_chat_history';
 const STORAGE_OPEN_KEY = 'botdocs_chat_open';
@@ -46,15 +47,27 @@ export function initChat(): void {
   // Restore open/closed state
   if (isOpen) {
     chatContainer.style.display = 'flex';
+    // If chatbox is restored as open, initialize RAG engine
+    if (!isRAGInitialized) {
+      initRAGEngine().then(() => {
+        isRAGInitialized = true;
+      });
+    }
   }
 }
 
-export function toggleChat(): void {
+export async function toggleChat(): Promise<void> {
   isOpen = !isOpen;
   const chatContainer = document.getElementById('chat-container');
 
   if (chatContainer) {
     chatContainer.style.display = isOpen ? 'flex' : 'none';
+  }
+
+  // Lazy load RAG engine on first open
+  if (isOpen && !isRAGInitialized) {
+    await initRAGEngine();
+    isRAGInitialized = true;
   }
 
   // Save open state
@@ -70,7 +83,7 @@ export function renderChatUI(container: HTMLElement): void {
         <button class="chat-close" id="chat-close">×</button>
       </div>
     </div>
-    <div class="chat-status" id="chat-status">
+    <div class="chat-status" id="chat-status" style="display: none;">
       Initializing chat...
     </div>
     <div class="chat-messages" id="chat-messages">
@@ -123,8 +136,14 @@ export function renderChatUI(container: HTMLElement): void {
     });
   }
 
-  // Initialize RAG engine
-  initRAGEngine();
+  // Don't initialize RAG engine here - it's lazy loaded on first open
+  // Show ready state if already initialized
+  if (isRAGInitialized) {
+    const statusEl = document.getElementById('chat-status');
+    if (statusEl) {
+      statusEl.style.display = 'none';
+    }
+  }
 }
 
 async function initRAGEngine(): Promise<void> {
@@ -132,10 +151,12 @@ async function initRAGEngine(): Promise<void> {
   if (!statusEl) return;
 
   try {
+    // Show status element (it might be hidden from previous sessions)
+    statusEl.style.display = 'block';
+    statusEl.textContent = 'Loading AI models...';
+
     // Lazy load RAG engine
     const { initializeRAG, isRAGReady } = await import('./rag-engine.js');
-
-    statusEl.textContent = 'Loading AI models...';
 
     await initializeRAG((progress) => {
       statusEl.innerHTML = `
