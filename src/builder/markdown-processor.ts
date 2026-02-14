@@ -1,6 +1,7 @@
 import MarkdownIt from 'markdown-it';
 import anchor from 'markdown-it-anchor';
 import toc from 'markdown-it-toc-done-right';
+import alerts from 'markdown-it-github-alerts';
 import { fromHighlighter } from '@shikijs/markdown-it/core';
 import { bundledLanguages, getHighlighter } from 'shiki';
 import matter from 'gray-matter';
@@ -38,6 +39,9 @@ export class MarkdownProcessor {
       containerClass: 'toc',
       listType: 'ul',
     });
+
+    // Add GitHub alerts plugin for [!NOTE], [!WARNING], etc.
+    this.md.use(alerts);
   }
 
   private escapeHtml(text: string): string {

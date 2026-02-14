@@ -11,6 +11,27 @@
   --code-bg: #2d2d2d;
 }
 
+/* Dark theme alerts */
+[data-theme='dark'] .markdown-alert-note {
+  background: rgba(59, 130, 246, 0.15);
+}
+
+[data-theme='dark'] .markdown-alert-tip {
+  background: rgba(16, 185, 129, 0.15);
+}
+
+[data-theme='dark'] .markdown-alert-important {
+  background: rgba(139, 92, 246, 0.15);
+}
+
+[data-theme='dark'] .markdown-alert-warning {
+  background: rgba(245, 158, 11, 0.15);
+}
+
+[data-theme='dark'] .markdown-alert-caution {
+  background: rgba(239, 68, 68, 0.15);
+}
+
 /* Smooth theme transition */
 * {
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
@@ -33,5 +54,25 @@
     --link-color: #60a5fa;
     --link-hover: #93c5fd;
     --code-bg: #2d2d2d;
+  }
+
+  :root:not([data-theme='light']) .markdown-alert-note {
+    background: rgba(59, 130, 246, 0.15);
+  }
+
+  :root:not([data-theme='light']) .markdown-alert-tip {
+    background: rgba(16, 185, 129, 0.15);
+  }
+
+  :root:not([data-theme='light']) .markdown-alert-important {
+    background: rgba(139, 92, 246, 0.15);
+  }
+
+  :root:not([data-theme='light']) .markdown-alert-warning {
+    background: rgba(245, 158, 11, 0.15);
+  }
+
+  :root:not([data-theme='light']) .markdown-alert-caution {
+    background: rgba(239, 68, 68, 0.15);
   }
 }
