@@ -49,7 +49,10 @@ export class ClientEmbedder {
       await this.initialize();
     }
 
-    const output = await this.model(text, {
+    // Prepend "query: " prefix for e5 models
+    const prefixedText = `query: ${text}`;
+
+    const output = await this.model(prefixedText, {
       pooling: 'mean',
       normalize: true,
     });

@@ -32,8 +32,11 @@ export class Embedder {
       await this.initialize();
     }
 
+    // Prepend "passage: " prefix for e5 models
+    const prefixedText = `passage: ${text}`;
+
     // Generate embedding
-    const output = await this.model(text, {
+    const output = await this.model(prefixedText, {
       pooling: 'mean',
       normalize: true,
     });
