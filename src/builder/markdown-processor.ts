@@ -2,6 +2,11 @@ import MarkdownIt from 'markdown-it';
 import anchor from 'markdown-it-anchor';
 import toc from 'markdown-it-toc-done-right';
 import alerts from 'markdown-it-github-alerts';
+import taskLists from 'markdown-it-task-lists';
+import footnote from 'markdown-it-footnote';
+import { full as emoji } from 'markdown-it-emoji';
+import sub from 'markdown-it-sub';
+import sup from 'markdown-it-sup';
 import { fromHighlighter } from '@shikijs/markdown-it/core';
 import { bundledLanguages, getHighlighter } from 'shiki';
 import matter from 'gray-matter';
@@ -17,6 +22,7 @@ export class MarkdownProcessor {
       html: true,
       linkify: true,
       typographer: true,
+      breaks: false,
       highlight: (code, lang, attrs) => {
         // Fallback for when Shiki isn't initialized or lang not found
         if (!lang) {
@@ -24,7 +30,9 @@ export class MarkdownProcessor {
         }
         return `<pre><code class="language-${lang}">${this.escapeHtml(code)}</code></pre>`;
       },
-    });
+    })
+      // Enable strikethrough (built-in feature)
+      .enable('strikethrough');
 
     // Add anchor plugin for heading links
     this.md.use(anchor, {
@@ -42,6 +50,23 @@ export class MarkdownProcessor {
 
     // Add GitHub alerts plugin for [!NOTE], [!WARNING], etc.
     this.md.use(alerts);
+
+    // Add task lists plugin for - [ ] and - [x]
+    this.md.use(taskLists, {
+      enabled: true,
+      label: true,
+      labelAfter: true,
+    });
+
+    // Add footnotes plugin for [^1] style references
+    this.md.use(footnote);
+
+    // Add emoji shortcuts plugin for :smile: → 😄
+    this.md.use(emoji);
+
+    // Add subscript and superscript support
+    this.md.use(sub);
+    this.md.use(sup);
   }
 
   private escapeHtml(text: string): string {

@@ -290,6 +290,62 @@ li {
   margin-bottom: 0.5rem;
 }
 
+/* Task Lists */
+.task-list-item {
+  list-style: none;
+  margin-left: -1.5rem;
+}
+
+.task-list-item-checkbox {
+  margin-right: 0.5rem;
+  margin-left: 0.25rem;
+  cursor: pointer;
+}
+
+.task-list-item-checkbox[checked] {
+  accent-color: var(--link-color);
+}
+
+/* Footnotes */
+.footnotes {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border-color);
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.footnotes-sep {
+  display: none;
+}
+
+.footnotes ol {
+  padding-left: 1.5rem;
+}
+
+.footnote-ref {
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.footnote-ref a {
+  color: var(--link-color);
+  text-decoration: none;
+}
+
+.footnote-ref a:hover {
+  text-decoration: underline;
+}
+
+.footnote-backref {
+  text-decoration: none;
+  margin-left: 0.25rem;
+}
+
+sup.footnote-ref {
+  margin-left: 0.125rem;
+}
+
 /* Tables */
 table {
   width: 100%;
