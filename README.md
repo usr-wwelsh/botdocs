@@ -13,12 +13,10 @@ Convert markdown documentation into beautiful static sites with AI-powered seman
 
 ## Installation
 
+Install globally via npm:
+
 ```bash
-git clone https://github.com/usr-wwelsh/botdocs.git
-cd botdocs
-npm install
-npm run build && npm run build:client
-npm install -g .
+npm install -g botdocs
 ```
 
 ## Usage
@@ -71,25 +69,24 @@ description: Quick start guide
 2. **Runtime**: User query → embed → search vector DB → return relevant chunks
 3. **No LLM**: Pure semantic search, not AI text generation
 
-## Development
-
-```bash
-# Watch mode
-npm run dev
-
-# Build both server and client
-npm run build && npm run build:client
-
-# Test locally
-botdocs ./test-docs
-```
-
 ## Architecture
 
 - **Embedding Model**: `e5-small-v2` (384-dim vectors, 2.2x faster than all-MiniLM-L6-v2)
 - **Search**: Cosine similarity, client-side only
-- **Bundle Size**: ~825KB (includes Transformers.js)
+- **Browser Bundle**: ~825KB (includes Transformers.js)
 - **Deployment**: Fully static, works on any host
+
+## Development
+
+Building from source:
+
+```bash
+git clone https://github.com/usr-wwelsh/botdocs.git
+cd botdocs
+npm install
+npm run build && npm run build:client
+botdocs ./test-docs
+```
 
 ## License
 

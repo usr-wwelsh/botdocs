@@ -1,10 +1,25 @@
+# Exclude source files
 src/
-test-docs/
 tsconfig.json
 vite.config.ts
+
+# Exclude test/example directories
+test-docs/
+docs/
+output/
+
+# Exclude development files
+CLAUDE.md
 .gitignore
 *.log
 *.tsbuildinfo
+*.map
+
+# Exclude editor/system files
 node_modules/
 .vscode/
 .idea/
+
+# Include build outputs (override .gitignore)
+!dist/
+!dist-client/

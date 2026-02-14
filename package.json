@@ -9,6 +9,15 @@
   },
   "main": "./dist/src/cli/index.js",
   "type": "module",
+  "files": [
+    "dist/",
+    "dist-client/",
+    "bin/",
+    "src/templates/",
+    "src/styles/",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc",
     "build:client": "vite build",

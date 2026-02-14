@@ -24,7 +24,7 @@ export default defineConfig({
       },
     },
     minify: 'terser',
-    sourcemap: true,
+    sourcemap: false,
   },
   resolve: {
     extensions: ['.ts', '.js'],
