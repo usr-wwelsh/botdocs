@@ -1,8 +1,7 @@
 import { BuildOptions, BotdocsConfig, defaultConfig } from '../types/config.js';
 import { SiteGenerator } from './site-generator.js';
 import { VectorDBBuilder } from './vector-db-builder.js';
-import { existsSync, readFileSync, writeFileSync, copyFileSync } from 'fs';
-import fs from 'fs-extra';
+import { existsSync, readFileSync, writeFileSync, copyFileSync, mkdirSync, cpSync } from 'fs';
 import { join, dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { exec } from 'child_process';
@@ -38,7 +37,7 @@ export async function build(options: BuildOptions): Promise<void> {
   }
 
   // Prepare output directory
-  fs.ensureDirSync(outputDir);
+  mkdirSync(outputDir, { recursive: true });
   if (verbose) {
     console.log(`Cleaning output directory: ${outputDir}`);
   }
@@ -51,8 +50,8 @@ export async function build(options: BuildOptions): Promise<void> {
 
   // Create assets directories
   const assetsDir = join(outputDir, 'assets');
-  fs.ensureDirSync(join(assetsDir, 'css'));
-  fs.ensureDirSync(join(assetsDir, 'js'));
+  mkdirSync(join(assetsDir, 'css'), { recursive: true });
+  mkdirSync(join(assetsDir, 'js'), { recursive: true });
 
   if (verbose) {
     console.log(`Processed ${documents.length} documents`);
@@ -107,7 +106,7 @@ export async function build(options: BuildOptions): Promise<void> {
       const distAssetsDir = join(distClientDir, 'assets');
       if (existsSync(distAssetsDir)) {
         const outputAssetsDir = join(jsOutputDir, 'assets');
-        fs.copySync(distAssetsDir, outputAssetsDir);
+        cpSync(distAssetsDir, outputAssetsDir, { recursive: true });
         if (verbose) {
           console.log('Copied code-split chunks');
         }

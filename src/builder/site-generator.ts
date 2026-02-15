@@ -1,6 +1,4 @@
-import { glob } from 'glob';
-import { readFileSync, writeFileSync } from 'fs';
-import fs from 'fs-extra';
+import { readFileSync, writeFileSync, readdirSync, mkdirSync, cpSync } from 'fs';
 import { join, dirname, relative, resolve } from 'path';
 import { MarkdownProcessor } from './markdown-processor.js';
 import { TemplateEngine } from './template-engine.js';
@@ -31,12 +29,19 @@ export class SiteGenerator {
   ): Promise<ProcessedDocument[]> {
     console.log('Processing markdown files...');
 
-    // Find all markdown files
-    const markdownFiles = await glob('**/*.md', {
-      cwd: inputDir,
-      absolute: true,
-      ignore: ['node_modules/**', '**/node_modules/**'],
+    // Find all markdown files using native Node.js readdir
+    const allFiles = readdirSync(inputDir, {
+      recursive: true,
+      withFileTypes: true
     });
+
+    const markdownFiles = allFiles
+      .filter(dirent =>
+        dirent.isFile() &&
+        dirent.name.endsWith('.md') &&
+        !dirent.parentPath.includes('node_modules')
+      )
+      .map(dirent => join(dirent.parentPath || dirent.path, dirent.name));
 
     if (markdownFiles.length === 0) {
       throw new Error(`No markdown files found in ${inputDir}`);
@@ -128,7 +133,7 @@ export class SiteGenerator {
         outputDir,
         doc.relativePath.replace(/\.md$/, '.html')
       );
-      fs.ensureDirSync(dirname(outputPath));
+      mkdirSync(dirname(outputPath), { recursive: true });
       writeFileSync(outputPath, html, 'utf-8');
     }
 
@@ -143,7 +148,7 @@ export class SiteGenerator {
       );
       const indexPath = join(outputDir, 'index.html');
       if (readmePath !== indexPath) {
-        fs.copySync(readmePath, indexPath);
+        cpSync(readmePath, indexPath);
       }
     }
 
