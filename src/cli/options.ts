@@ -1,4 +1,4 @@
-export type Theme = 'gitbook' | 'material' | 'minimal' | 'slate' | 'modern';
+export type Theme = 'classic' | 'material' | 'minimal' | 'slate' | 'modern';
 
 export interface CliOptions {
   output?: string;
@@ -12,5 +12,5 @@ export const defaultOptions: Partial<CliOptions> = {
   output: 'output',
   noChat: false,
   verbose: false,
-  theme: 'gitbook',
+  theme: 'classic',
 };

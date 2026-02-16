@@ -24,7 +24,7 @@ program
   .option('-o, --output <dir>', 'Output directory for generated site', defaultOptions.output)
   .option('--no-chat', 'Disable AI chatbot functionality')
   .option('-c, --config <file>', 'Path to config file (botdocs.config.json)')
-  .option('-t, --theme <theme>', 'Theme to use (gitbook, material, minimal, slate, modern)', defaultOptions.theme)
+  .option('-t, --theme <theme>', 'Theme to use (classic, material, minimal, slate, modern)', defaultOptions.theme)
   .option('-v, --verbose', 'Enable verbose logging')
   .action(async (input: string, options: CliOptions) => {
     try {

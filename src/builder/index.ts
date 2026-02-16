@@ -138,7 +138,7 @@ export async function build(options: BuildOptions): Promise<void> {
   const outputCssDir = join(assetsDir, 'css');
 
   // Determine which theme to use
-  const selectedTheme = config.theme || defaultConfig.theme || 'gitbook';
+  const selectedTheme = config.theme || defaultConfig.theme || 'classic';
 
   // Combine CSS files: base styles + selected theme + chat
   const cssFiles = ['themes.css', 'chat.css'];
@@ -159,8 +159,8 @@ export async function build(options: BuildOptions): Promise<void> {
       console.log(`Using theme: ${selectedTheme}`);
     }
   } else {
-    console.warn(`Theme '${selectedTheme}' not found, falling back to gitbook`);
-    const fallbackPath = join(themesDir, 'gitbook.css');
+    console.warn(`Theme '${selectedTheme}' not found, falling back to classic`);
+    const fallbackPath = join(themesDir, 'classic.css');
     if (existsSync(fallbackPath)) {
       bundledCss += readFileSync(fallbackPath, 'utf-8') + '\n\n';
     }

@@ -1,4 +1,4 @@
-/* GitBook Theme - Clean, corporate, professional */
+/* Classic Theme - Clean, corporate, professional */
 
 /* Reset and base styles */
 * {
@@ -499,7 +499,7 @@ img {
   font-size: 0.875rem;
 }
 
-/* Chat Widget - GitBook Style (Clean & Simple) */
+/* Chat Widget - Classic Style (Clean & Simple) */
 .chat-toggle {
   background: var(--link-color);
   border-radius: 50%;

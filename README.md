@@ -53,12 +53,12 @@ botdocs ./docs -o ./public -t slate -v
 | `--output <dir>` | `-o` | Output directory for generated site | `output` |
 | `--no-chat` | | Disable AI chatbot functionality | `false` |
 | `--config <file>` | `-c` | Path to config file | `botdocs.config.json` |
-| `--theme <theme>` | `-t` | Theme to use | `gitbook` |
+| `--theme <theme>` | `-t` | Theme to use | `classic` |
 | `--verbose` | `-v` | Enable verbose logging | `false` |
 
 ### Available Themes
 
-- **gitbook** - GitBook-inspired theme (default)
+- **classic** - Clean, professional theme (default)
 - **material** - Material Design theme
 - **minimal** - Clean, minimalist theme
 - **slate** - Dark slate theme
@@ -72,13 +72,13 @@ Create `botdocs.config.json` in your docs directory:
 {
   "title": "My Documentation",
   "description": "Project docs",
-  "theme": "gitbook",
+  "theme": "classic",
   "attribution": true,
   "chat": { "enabled": true },
   "build": {
     "chunkSize": 500,
     "chunkOverlap": 50,
-    "topK": 5
+    "topK": 3
   }
 }
 ```
@@ -89,13 +89,13 @@ Create `botdocs.config.json` in your docs directory:
 |--------|------|---------|-------------|
 | `title` | string | `"Documentation"` | Site title |
 | `description` | string | `"Project documentation"` | Site description |
-| `theme` | string | `"gitbook"` | Theme to use (gitbook, material, minimal, slate, modern) |
+| `theme` | string | `"classic"` | Theme to use (classic, material, minimal, slate, modern) |
 | `attribution` | boolean | `true` | Show "Built with Botdocs" footer link |
 | `chat.enabled` | boolean | `true` | Enable AI chatbot |
 | `chat.welcomeMessage` | string | `"Ask me anything about the docs!"` | Chatbot welcome message |
 | `build.chunkSize` | number | `500` | Text chunk size for embeddings |
 | `build.chunkOverlap` | number | `50` | Overlap between chunks |
-| `build.topK` | number | `5` | Number of results to return |
+| `build.topK` | number | `3` | Number of results to return |
 
 ## Front Matter
 

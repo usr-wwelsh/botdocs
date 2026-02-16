@@ -1,4 +1,4 @@
-export type Theme = 'gitbook' | 'material' | 'minimal' | 'slate' | 'modern';
+export type Theme = 'classic' | 'material' | 'minimal' | 'slate' | 'modern';
 
 export interface BotdocsConfig {
   title?: string;
@@ -28,7 +28,7 @@ export interface BuildOptions {
 export const defaultConfig: BotdocsConfig = {
   title: 'Documentation',
   description: 'Project documentation',
-  theme: 'gitbook',
+  theme: 'classic',
   attribution: true,
   chat: {
     enabled: true,
@@ -37,6 +37,6 @@ export const defaultConfig: BotdocsConfig = {
   build: {
     chunkSize: 500,
     chunkOverlap: 50,
-    topK: 5,
+    topK: 3,
   },
 };
