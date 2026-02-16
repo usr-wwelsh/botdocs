@@ -1,3 +1,5 @@
+/* GitBook Theme - Clean, corporate, professional */
+
 /* Reset and base styles */
 * {
   margin: 0;
@@ -197,7 +199,6 @@ blockquote {
   gap: 0.5rem;
 }
 
-/* Hide the GitHub SVG icons */
 .markdown-alert-title svg {
   display: none;
 }
@@ -210,7 +211,6 @@ blockquote {
   margin-bottom: 0;
 }
 
-/* Note - Blue */
 .markdown-alert-note {
   border-left-color: #3b82f6;
   background: rgba(59, 130, 246, 0.1);
@@ -224,7 +224,6 @@ blockquote {
   content: 'ℹ️';
 }
 
-/* Tip - Green */
 .markdown-alert-tip {
   border-left-color: #10b981;
   background: rgba(16, 185, 129, 0.1);
@@ -238,7 +237,6 @@ blockquote {
   content: '💡';
 }
 
-/* Important - Purple */
 .markdown-alert-important {
   border-left-color: #8b5cf6;
   background: rgba(139, 92, 246, 0.1);
@@ -252,7 +250,6 @@ blockquote {
   content: '❗';
 }
 
-/* Warning - Orange */
 .markdown-alert-warning {
   border-left-color: #f59e0b;
   background: rgba(245, 158, 11, 0.1);
@@ -266,7 +263,6 @@ blockquote {
   content: '⚠️';
 }
 
-/* Caution - Red */
 .markdown-alert-caution {
   border-left-color: #ef4444;
   background: rgba(239, 68, 68, 0.1);
@@ -503,27 +499,55 @@ img {
   font-size: 0.875rem;
 }
 
-/* Footer Attribution */
-.botdocs-attribution {
-  margin-top: 4rem;
-  padding-top: 2rem;
-  border-top: 1px solid var(--border-color);
-  text-align: center;
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-  opacity: 0.8;
+/* Chat Widget - GitBook Style (Clean & Simple) */
+.chat-toggle {
+  background: var(--link-color);
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
-.botdocs-attribution a {
-  color: var(--text-secondary);
-  text-decoration: none;
-  font-weight: 500;
-  transition: color 0.2s;
+.chat-toggle:hover {
+  background: var(--link-hover);
 }
 
-.botdocs-attribution a:hover {
-  color: var(--link-color);
-  text-decoration: none;
+.chat-container {
+  border-radius: 0.5rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.chat-header {
+  background: var(--link-color);
+  border-radius: 0.5rem 0.5rem 0 0;
+}
+
+.chat-message.user .message-content {
+  background: var(--link-color);
+}
+
+/* Dark mode chat styling */
+[data-theme='dark'] .chat-container {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+[data-theme='dark'] .chat-messages {
+  background: #1f2937;
+}
+
+[data-theme='dark'] .chat-message.assistant .message-content {
+  background: #374151;
+  color: #f3f4f6;
+}
+
+[data-theme='dark'] .chat-input-container {
+  background: #111827;
+  border-top-color: #374151;
+}
+
+[data-theme='dark'] .chat-input {
+  background: #1f2937;
+  border-color: #374151;
+  color: #f3f4f6;
 }
 
 /* Responsive */

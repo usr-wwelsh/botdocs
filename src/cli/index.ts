@@ -24,6 +24,7 @@ program
   .option('-o, --output <dir>', 'Output directory for generated site', defaultOptions.output)
   .option('--no-chat', 'Disable AI chatbot functionality')
   .option('-c, --config <file>', 'Path to config file (botdocs.config.json)')
+  .option('-t, --theme <theme>', 'Theme to use (gitbook, material, minimal, slate, modern)', defaultOptions.theme)
   .option('-v, --verbose', 'Enable verbose logging')
   .action(async (input: string, options: CliOptions) => {
     try {
@@ -35,6 +36,7 @@ program
         console.log(`Input: ${inputDir}`);
         console.log(`Output: ${outputDir}`);
         console.log(`Chat enabled: ${!options.noChat}`);
+        console.log(`Theme: ${options.theme || defaultOptions.theme}`);
       }
 
       await build({
@@ -43,6 +45,7 @@ program
         chatEnabled: !options.noChat,
         configPath: options.config,
         verbose: options.verbose || false,
+        theme: options.theme,
       });
 
       console.log('Build complete!');

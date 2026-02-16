@@ -1,9 +1,10 @@
+export type Theme = 'gitbook' | 'material' | 'minimal' | 'slate' | 'modern';
+
 export interface BotdocsConfig {
   title?: string;
   description?: string;
-  theme?: {
-    primaryColor?: string;
-  };
+  theme?: Theme;
+  attribution?: boolean;
   chat?: {
     enabled?: boolean;
     welcomeMessage?: string;
@@ -21,14 +22,14 @@ export interface BuildOptions {
   chatEnabled: boolean;
   configPath?: string;
   verbose: boolean;
+  theme?: Theme;
 }
 
 export const defaultConfig: BotdocsConfig = {
   title: 'Documentation',
   description: 'Project documentation',
-  theme: {
-    primaryColor: '#3b82f6',
-  },
+  theme: 'gitbook',
+  attribution: true,
   chat: {
     enabled: true,
     welcomeMessage: 'Ask me anything about the docs!',

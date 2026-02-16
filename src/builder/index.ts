@@ -16,7 +16,7 @@ const __dirname = dirname(__filename);
  * Main build orchestrator
  */
 export async function build(options: BuildOptions): Promise<void> {
-  const { inputDir, outputDir, chatEnabled, configPath, verbose } = options;
+  const { inputDir, outputDir, chatEnabled, configPath, verbose, theme } = options;
 
   // Validate input directory
   if (!existsSync(inputDir)) {
@@ -30,6 +30,11 @@ export async function build(options: BuildOptions): Promise<void> {
   if (chatEnabled !== undefined) {
     config.chat = config.chat || {};
     config.chat.enabled = chatEnabled;
+  }
+
+  // Override theme if specified in CLI
+  if (theme) {
+    config.theme = theme;
   }
 
   if (verbose) {
@@ -129,16 +134,35 @@ export async function build(options: BuildOptions): Promise<void> {
   console.log('Copying styles...');
   // From dist/src/builder, go to project root, then to src/styles
   const stylesDir = resolve(__dirname, '../../../src/styles');
+  const themesDir = join(stylesDir, 'themes');
   const outputCssDir = join(assetsDir, 'css');
 
-  // Combine all CSS files into one bundle
-  const cssFiles = ['main.css', 'themes.css', 'chat.css'];
+  // Determine which theme to use
+  const selectedTheme = config.theme || defaultConfig.theme || 'gitbook';
+
+  // Combine CSS files: base styles + selected theme + chat
+  const cssFiles = ['themes.css', 'chat.css'];
   let bundledCss = '';
 
   for (const cssFile of cssFiles) {
     const cssPath = join(stylesDir, cssFile);
     if (existsSync(cssPath)) {
       bundledCss += readFileSync(cssPath, 'utf-8') + '\n\n';
+    }
+  }
+
+  // Add selected theme CSS
+  const themePath = join(themesDir, `${selectedTheme}.css`);
+  if (existsSync(themePath)) {
+    bundledCss += readFileSync(themePath, 'utf-8') + '\n\n';
+    if (verbose) {
+      console.log(`Using theme: ${selectedTheme}`);
+    }
+  } else {
+    console.warn(`Theme '${selectedTheme}' not found, falling back to gitbook`);
+    const fallbackPath = join(themesDir, 'gitbook.css');
+    if (existsSync(fallbackPath)) {
+      bundledCss += readFileSync(fallbackPath, 'utf-8') + '\n\n';
     }
   }
 

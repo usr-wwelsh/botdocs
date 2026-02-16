@@ -126,6 +126,7 @@ export class SiteGenerator {
         content,
         navigation: this.renderNavigation(navigation, doc.url),
         chatEnabled: config.chat?.enabled,
+        attribution: config.attribution !== false, // defaults to true
       });
 
       // Write HTML file

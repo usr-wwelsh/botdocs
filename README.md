@@ -1,5 +1,7 @@
 # Botdocs
 
+[![npm version](https://img.shields.io/npm/v/botdocs.svg)](https://www.npmjs.com/package/botdocs)
+
 Convert markdown documentation into beautiful static sites with AI-powered semantic search — no backend required.
 
 ## Features
@@ -33,7 +35,34 @@ botdocs ./docs -o ./public
 
 # Verbose logging
 botdocs ./docs -v
+
+# Use a specific theme
+botdocs ./docs -t material
+
+# Custom config file
+botdocs ./docs -c ./my-config.json
+
+# Combine multiple options
+botdocs ./docs -o ./public -t slate -v
 ```
+
+### CLI Options
+
+| Option | Alias | Description | Default |
+|--------|-------|-------------|---------|
+| `--output <dir>` | `-o` | Output directory for generated site | `output` |
+| `--no-chat` | | Disable AI chatbot functionality | `false` |
+| `--config <file>` | `-c` | Path to config file | `botdocs.config.json` |
+| `--theme <theme>` | `-t` | Theme to use | `gitbook` |
+| `--verbose` | `-v` | Enable verbose logging | `false` |
+
+### Available Themes
+
+- **gitbook** - GitBook-inspired theme (default)
+- **material** - Material Design theme
+- **minimal** - Clean, minimalist theme
+- **slate** - Dark slate theme
+- **modern** - Modern documentation theme
 
 ## Configuration
 
@@ -43,6 +72,8 @@ Create `botdocs.config.json` in your docs directory:
 {
   "title": "My Documentation",
   "description": "Project docs",
+  "theme": "gitbook",
+  "attribution": true,
   "chat": { "enabled": true },
   "build": {
     "chunkSize": 500,
@@ -51,6 +82,20 @@ Create `botdocs.config.json` in your docs directory:
   }
 }
 ```
+
+### Configuration Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `title` | string | `"Documentation"` | Site title |
+| `description` | string | `"Project documentation"` | Site description |
+| `theme` | string | `"gitbook"` | Theme to use (gitbook, material, minimal, slate, modern) |
+| `attribution` | boolean | `true` | Show "Built with Botdocs" footer link |
+| `chat.enabled` | boolean | `true` | Enable AI chatbot |
+| `chat.welcomeMessage` | string | `"Ask me anything about the docs!"` | Chatbot welcome message |
+| `build.chunkSize` | number | `500` | Text chunk size for embeddings |
+| `build.chunkOverlap` | number | `50` | Overlap between chunks |
+| `build.topK` | number | `5` | Number of results to return |
 
 ## Front Matter
 
