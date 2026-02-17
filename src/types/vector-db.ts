@@ -6,6 +6,7 @@ export interface ChunkMetadata {
   url: string;
   startLine?: number;
   endLine?: number;
+  fileHash?: string; // MD5 hash of source file content for incremental builds
 }
 
 export interface DocumentChunk {

@@ -27,7 +27,7 @@ export class Chunker {
   /**
    * Chunk a document into semantically meaningful pieces
    */
-  chunkDocument(doc: ProcessedDocument): TextChunk[] {
+  chunkDocument(doc: ProcessedDocument, fileHash?: string): TextChunk[] {
     const chunks: TextChunk[] = [];
     const lines = doc.content.split('\n');
 
@@ -69,7 +69,7 @@ export class Chunker {
         // Save current chunk if it exists
         if (currentChunk.length > 0) {
           chunks.push(
-            this.createChunk(currentChunk.join('\n'), doc, currentHeading)
+            this.createChunk(currentChunk.join('\n'), doc, currentHeading, fileHash)
           );
         }
 
@@ -84,7 +84,7 @@ export class Chunker {
         if (tokenCount >= this.options.maxChunkSize) {
           // Split chunk
           const chunkText = currentChunk.join('\n');
-          chunks.push(this.createChunk(chunkText, doc, currentHeading));
+          chunks.push(this.createChunk(chunkText, doc, currentHeading, fileHash));
 
           // Create overlap for next chunk
           const overlapLines = this.getOverlapLines(
@@ -99,7 +99,7 @@ export class Chunker {
     // Add final chunk
     if (currentChunk.length > 0) {
       chunks.push(
-        this.createChunk(currentChunk.join('\n'), doc, currentHeading)
+        this.createChunk(currentChunk.join('\n'), doc, currentHeading, fileHash)
       );
     }
 
@@ -112,7 +112,8 @@ export class Chunker {
   private createChunk(
     text: string,
     doc: ProcessedDocument,
-    heading?: string
+    heading?: string,
+    fileHash?: string
   ): TextChunk {
     return {
       text: text.trim(),
@@ -122,6 +123,7 @@ export class Chunker {
         heading,
         headingId: heading ? this.slugify(heading) : undefined,
         url: doc.url,
+        fileHash,
       },
     };
   }
@@ -173,11 +175,12 @@ export class Chunker {
   /**
    * Chunk multiple documents
    */
-  chunkDocuments(documents: ProcessedDocument[]): TextChunk[] {
+  chunkDocuments(documents: ProcessedDocument[], fileHashes?: Map<string, string>): TextChunk[] {
     const allChunks: TextChunk[] = [];
 
     for (const doc of documents) {
-      const chunks = this.chunkDocument(doc);
+      const fileHash = fileHashes?.get(doc.relativePath);
+      const chunks = this.chunkDocument(doc, fileHash);
       allChunks.push(...chunks);
     }
 
