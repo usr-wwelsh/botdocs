@@ -258,7 +258,7 @@ blockquote {
 }
 
 .markdown-alert-note .markdown-alert-title::before {
-  content: 'Note: ';
+  content: '';
   font-weight: 700;
 }
 
@@ -272,7 +272,7 @@ blockquote {
 }
 
 .markdown-alert-tip .markdown-alert-title::before {
-  content: 'Tip: ';
+  content: '';
   font-weight: 700;
 }
 
@@ -286,7 +286,7 @@ blockquote {
 }
 
 .markdown-alert-important .markdown-alert-title::before {
-  content: 'Important: ';
+  content: '';
   font-weight: 700;
 }
 
@@ -300,7 +300,7 @@ blockquote {
 }
 
 .markdown-alert-warning .markdown-alert-title::before {
-  content: 'Warning: ';
+  content: '';
   font-weight: 700;
 }
 
@@ -314,7 +314,7 @@ blockquote {
 }
 
 .markdown-alert-caution .markdown-alert-title::before {
-  content: 'Caution: ';
+  content: '';
   font-weight: 700;
 }
 
