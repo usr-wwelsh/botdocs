@@ -1,0 +1,122 @@
+.TH BOTDOCS 1 "2026-03-28" "botdocs 0.3.0" "User Commands"
+.SH NAME
+botdocs \- convert markdown documentation into a static website with AI chatbot
+.SH SYNOPSIS
+.B botdocs
+.RI [ options ]
+.I input
+.SH DESCRIPTION
+.B botdocs
+converts a directory of markdown files into a fully static documentation website.
+An optional client-side semantic search chatbot is included by default, powered by
+Transformers.js running entirely in the browser with no backend required.
+.PP
+The build pipeline scans markdown files, parses front matter, converts to HTML,
+generates vector embeddings for semantic search, and bundles everything into a
+self-contained static site.
+.SH ARGUMENTS
+.TP
+.I input
+Input directory containing markdown files. Required.
+.SH OPTIONS
+.TP
+.BR \-o ", " \-\-output " " \fIdir\fR
+Output directory for the generated site. Defaults to
+.BR output .
+.TP
+.B \-\-no\-chat
+Disable the AI chatbot functionality. The generated site will not include
+semantic search or the chat interface.
+.TP
+.BR \-c ", " \-\-config " " \fIfile\fR
+Path to a configuration file. If not specified, botdocs looks for
+.B botdocs.config.json
+in the input directory.
+.TP
+.BR \-t ", " \-\-theme " " \fItheme\fR
+Theme to use for the generated site. Available themes:
+.BR classic " (default), " material ", " minimal ", " slate ", " modern .
+.TP
+.BR \-v ", " \-\-verbose
+Enable verbose logging during the build process.
+.TP
+.BR \-V ", " \-\-version
+Output the version number.
+.TP
+.BR \-h ", " \-\-help
+Display help information.
+.SH CONFIGURATION
+A
+.B botdocs.config.json
+file can be placed in the input directory to configure the build:
+.PP
+.RS 4
+.nf
+{
+  "title": "My Documentation",
+  "chat": { "enabled": true },
+  "build": {
+    "chunkSize": 500,
+    "chunkOverlap": 50,
+    "topK": 5
+  }
+}
+.fi
+.RE
+.PP
+CLI options override configuration file settings.
+.SH EXAMPLES
+Build a documentation site from a directory:
+.PP
+.RS 4
+.nf
+botdocs ./docs
+.fi
+.RE
+.PP
+Build with a custom output directory and verbose logging:
+.PP
+.RS 4
+.nf
+botdocs ./docs -o ./site -v
+.fi
+.RE
+.PP
+Build without the chatbot:
+.PP
+.RS 4
+.nf
+botdocs ./docs --no-chat
+.fi
+.RE
+.PP
+Use the material theme:
+.PP
+.RS 4
+.nf
+botdocs ./docs -t material
+.fi
+.RE
+.SH EXIT STATUS
+.TP
+.B 0
+Successful build.
+.TP
+.B 1
+Build failed.
+.SH FILES
+.TP
+.I botdocs.config.json
+Optional configuration file in the input directory.
+.TP
+.I output/
+Default output directory containing the generated static site.
+.TP
+.I output/assets/vector\-db.json
+Vector database used by the client-side semantic search.
+.SH AUTHORS
+usr-wwelsh <https://wwel.sh>
+.SH BUGS
+Report bugs at:
+.UR https://github.com/usr-wwelsh/botdocs/issues
+.UE
