@@ -1,4 +1,4 @@
-.TH BOTDOCS 1 "2026-03-28" "botdocs 0.3.0" "User Commands"
+.TH BOTDOCS 1 "2026-08-15" "botdocs 0.4.0" "User Commands"
 .SH NAME
 botdocs \- convert markdown documentation into a static website with AI chatbot
 .SH SYNOPSIS
@@ -14,6 +14,10 @@ Transformers.js running entirely in the browser with no backend required.
 The build pipeline scans markdown files, parses front matter, converts to HTML,
 generates vector embeddings for semantic search, and bundles everything into a
 self-contained static site.
+.PP
+No server-side inference is performed. On first use, visitors to the generated
+site are asked for consent, with a disclosure of what runs locally, before the
+embedding model downloads to their browser.
 .SH ARGUMENTS
 .TP
 .I input
@@ -54,17 +58,34 @@ file can be placed in the input directory to configure the build:
 .nf
 {
   "title": "My Documentation",
-  "chat": { "enabled": true },
+  "description": "Project docs",
+  "theme": "classic",
+  "customCss": "custom.css",
+  "attribution": true,
+  "chat": {
+    "enabled": true,
+    "welcomeMessage": "Ask me anything about the docs!"
+  },
   "build": {
     "chunkSize": 500,
     "chunkOverlap": 50,
-    "topK": 5
+    "topK": 3
   }
 }
 .fi
 .RE
 .PP
 CLI options override configuration file settings.
+.PP
+.B customCss
+is a path to a CSS file, resolved relative to the config file's directory.
+It is appended after the theme CSS in the bundled stylesheet, so
+same-specificity selectors override the theme without
+.BR !important .
+.PP
+.B attribution
+controls the "Built with Botdocs" footer link and defaults to
+.BR true .
 .SH EXAMPLES
 Build a documentation site from a directory:
 .PP
