@@ -11,7 +11,7 @@ import { fromHighlighter } from '@shikijs/markdown-it/core';
 import { bundledLanguages, getHighlighter } from 'shiki';
 import matter from 'gray-matter';
 import { ProcessedDocument, DocumentMetadata } from '../types/document.js';
-import { relative, basename } from 'path';
+import { relative, basename, dirname } from 'path';
 
 export class MarkdownProcessor {
   private md: MarkdownIt;
@@ -76,6 +76,16 @@ export class MarkdownProcessor {
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#039;');
+  }
+
+  private decodeHtmlEntities(text: string): string {
+    return text
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#0?39;/g, "'");
   }
 
   private async setupShiki() {
@@ -154,17 +164,45 @@ export class MarkdownProcessor {
   }
 
   /**
-   * Extract title from markdown content (first h1) or filename
+   * Extract title from markdown content (first h1) or filename.
+   *
+   * Checks, in order: a markdown `# ` heading, an HTML `<h1>` tag (common
+   * when the heading wraps a logo image), and a lone banner image's alt
+   * text (READMEs that open with `![Project Name](banner.svg)` instead of
+   * a text heading). All matching skips fenced code blocks so shell
+   * comments like `# Start the server:` aren't mistaken for headings.
    */
   private extractTitle(content: string, relativePath: string): string {
-    const h1Match = content.match(/^#\s+(.+)$/m);
+    const withoutCodeFences = content.replace(/^```[\s\S]*?^```/gm, '');
+
+    const h1Match = withoutCodeFences.match(/^#\s+(.+)$/m);
     if (h1Match) {
-      return h1Match[1];
+      return h1Match[1].trim();
     }
 
-    // Fallback to filename
-    return basename(relativePath, '.md')
-      .replace(/-/g, ' ')
+    const htmlH1Match = withoutCodeFences.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
+    if (htmlH1Match) {
+      const text = this.decodeHtmlEntities(htmlH1Match[1].replace(/<[^>]+>/g, ''))
+        .replace(/\s+/g, ' ')
+        .trim();
+      if (text) {
+        return text;
+      }
+    }
+
+    const bannerImageMatch = withoutCodeFences.match(/^!\[([^\]]+)\]\([^)]*\)\s*$/m);
+    if (bannerImageMatch) {
+      return bannerImageMatch[1].trim();
+    }
+
+    // Fallback to filename, or the parent directory name for README/index
+    // files where the filename itself carries no useful title.
+    const base = basename(relativePath, '.md');
+    const parentDir = basename(dirname(relativePath));
+    const name = /^(readme|index)$/i.test(base) && parentDir !== '.' ? parentDir : base;
+
+    return name
+      .replace(/[-_]/g, ' ')
       .replace(/\b\w/g, (char) => char.toUpperCase());
   }
 
