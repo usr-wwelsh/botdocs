@@ -197,7 +197,6 @@ export class SiteGenerator {
       }
 
       if (isFolderIndex) {
-        group.title = title;
         group.url = doc.url;
       } else {
         group.children!.push({ title, url: doc.url });
