@@ -9,6 +9,10 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+function stripHtml(value: string): string {
+  return value.replace(/<[^>]*>/g, '');
+}
+
 export class SiteGenerator {
   private processor: MarkdownProcessor;
   private templateEngine: TemplateEngine;
@@ -120,7 +124,11 @@ export class SiteGenerator {
       // Render full page with layout
       const html = this.templateEngine.renderWithLoops(layoutTemplate, {
         title: doc.metadata.title || 'Documentation',
-        description: doc.metadata.description || config.description || '',
+        // The template engine doesn't escape interpolated values, so
+        // config.description may contain markup (e.g. a hotlink) meant
+        // for the visible siteDescription below — strip it here since
+        // this one lands inside a <meta content="..."> attribute.
+        description: stripHtml(doc.metadata.description || config.description || ''),
         siteTitle: config.title || 'Documentation',
         siteDescription: config.description || '',
         content,
