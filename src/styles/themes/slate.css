@@ -142,29 +142,6 @@ body {
   min-width: 0;
 }
 
-/* Code blocks stick to right side for split-screen effect */
-.content-wrapper pre {
-  position: relative;
-  margin-left: calc(-50vw + 50%);
-  margin-right: -2.5rem;
-  margin-top: -3rem;
-  margin-bottom: 2rem;
-  width: calc(100% + 50vw - 50% + 2.5rem);
-  max-width: 800px;
-  float: right;
-  clear: right;
-}
-
-/* Adjust paragraph spacing when followed by code */
-.content-wrapper p + pre {
-  margin-top: -2rem;
-}
-
-.content-wrapper h3 + pre,
-.content-wrapper h4 + pre {
-  margin-top: 1rem;
-}
-
 /* Typography - clean and technical */
 h1, h2, h3, h4, h5, h6 {
   margin-top: 2.5rem;
@@ -240,8 +217,10 @@ code {
 }
 
 pre {
-  background: var(--code-bg);
-  color: var(--code-text);
+  /* Shiki inlines a light-theme background/color on the element itself;
+     override it so slate's dark code style actually wins. */
+  background: var(--code-bg) !important;
+  color: var(--code-text) !important;
   padding: 1.5rem;
   border-radius: 6px;
   overflow-x: auto;
@@ -702,14 +681,6 @@ img {
 
   .content-wrapper {
     padding: 2rem 1.5rem;
-  }
-
-  .content-wrapper pre {
-    margin-left: 0;
-    margin-right: 0;
-    width: 100%;
-    float: none;
-    clear: both;
   }
 
   .layout {
