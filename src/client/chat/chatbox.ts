@@ -337,6 +337,7 @@ export function addMessage(message: Message): void {
   if (!messagesContainer) return;
 
   renderMessage(message, messagesContainer);
+  scrollToLatestMessage(messagesContainer, true);
 }
 
 function renderMessage(message: Message, container: HTMLElement): void {
@@ -366,11 +367,23 @@ function renderMessage(message: Message, container: HTMLElement): void {
 
   messageEl.innerHTML = html;
   container.appendChild(messageEl);
+}
 
-  // Scroll to bottom smoothly
+/**
+ * Scroll so the top of the latest message is in view, rather than the
+ * bottom of the whole history — long responses should be read from their
+ * start, not land scrolled past.
+ */
+function scrollToLatestMessage(container: HTMLElement, smooth: boolean): void {
+  const lastMessage = container.lastElementChild as HTMLElement | null;
+  if (!lastMessage) return;
+
+  const offset =
+    lastMessage.getBoundingClientRect().top - container.getBoundingClientRect().top;
+
   container.scrollTo({
-    top: container.scrollHeight,
-    behavior: 'smooth',
+    top: container.scrollTop + offset,
+    behavior: smooth ? 'smooth' : 'auto',
   });
 }
 
@@ -492,4 +505,6 @@ function restoreMessages(): void {
   for (const message of messages) {
     renderMessage(message, messagesContainer);
   }
+
+  scrollToLatestMessage(messagesContainer, false);
 }
