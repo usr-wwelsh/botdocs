@@ -7,6 +7,18 @@ import { pipeline, env } from '@xenova/transformers';
 // Configure for browser environment
 env.allowLocalModels = false;
 
+const MODEL_CACHE_NAME = 'transformers-cache';
+
+// Xenova/e5-small-v2, quantized ONNX weights (the file transformers.js fetches by default)
+export const ESTIMATED_MODEL_SIZE_MB = 30;
+
+export type ModelProgress = {
+  status: 'initiate' | 'download' | 'progress' | 'done';
+  file: string;
+  loaded?: number;
+  total?: number;
+};
+
 export class ClientEmbedder {
   private model: any = null;
   private modelName: string;
@@ -17,9 +29,25 @@ export class ClientEmbedder {
   }
 
   /**
+   * Check whether model files already exist in the browser's Cache API,
+   * without triggering a download.
+   */
+  async isModelCached(): Promise<boolean> {
+    if (typeof caches === 'undefined') return false;
+
+    try {
+      const cache = await caches.open(MODEL_CACHE_NAME);
+      const keys = await cache.keys();
+      return keys.some((request) => request.url.includes(this.modelName));
+    } catch {
+      return false;
+    }
+  }
+
+  /**
    * Initialize the embedding model (lazy loading)
    */
-  async initialize(): Promise<void> {
+  async initialize(onProgress?: (progress: number) => void): Promise<void> {
     if (this.model) return;
 
     if (this.isLoading) {
@@ -33,9 +61,29 @@ export class ClientEmbedder {
     this.isLoading = true;
 
     try {
-      console.log('Loading embedding model...');
-      this.model = await pipeline('feature-extraction', this.modelName);
-      console.log('Embedding model loaded');
+      const fileProgress = new Map<string, { loaded: number; total: number }>();
+
+      this.model = await pipeline('feature-extraction', this.modelName, {
+        progress_callback: onProgress
+          ? (event: ModelProgress) => {
+              if (event.status !== 'progress' || !event.total) return;
+
+              fileProgress.set(event.file, {
+                loaded: event.loaded ?? 0,
+                total: event.total,
+              });
+
+              let loaded = 0;
+              let total = 0;
+              for (const entry of fileProgress.values()) {
+                loaded += entry.loaded;
+                total += entry.total;
+              }
+
+              onProgress(total > 0 ? (loaded / total) * 100 : 0);
+            }
+          : undefined,
+      });
     } finally {
       this.isLoading = false;
     }

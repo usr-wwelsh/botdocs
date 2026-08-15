@@ -15,6 +15,14 @@ let isInitialized = false;
 let topK = 5;
 
 /**
+ * Check whether the embedding model is already cached in the browser
+ * (i.e. initializing won't require a network download).
+ */
+export async function isModelCached(): Promise<boolean> {
+  return getEmbedder().isModelCached();
+}
+
+/**
  * Initialize search system (load vector DB and embeddings)
  */
 export async function initializeRAG(
@@ -23,15 +31,16 @@ export async function initializeRAG(
   if (isInitialized) return;
 
   try {
-    // Step 1: Load vector database
-    if (onProgress) onProgress(20);
+    // Vector DB is small and bundled with the site; weight it lightly.
     const vectorSearch = getVectorSearch();
     await vectorSearch.loadVectorDB();
+    if (onProgress) onProgress(5);
 
-    // Step 2: Load embedding model
-    if (onProgress) onProgress(60);
+    // Embedding model download dominates total time; report real byte progress.
     const embedder = getEmbedder();
-    await embedder.initialize();
+    await embedder.initialize((modelProgress) => {
+      if (onProgress) onProgress(5 + modelProgress * 0.95);
+    });
 
     isInitialized = true;
     if (onProgress) onProgress(100);

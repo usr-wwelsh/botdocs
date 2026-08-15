@@ -3,6 +3,7 @@
  */
 
 import { renderMarkdown } from '../utils/markdown-renderer.js';
+import { ESTIMATED_MODEL_SIZE_MB } from './embedder.js';
 
 export interface Message {
   role: 'user' | 'assistant';
@@ -49,9 +50,7 @@ export function initChat(): void {
     chatContainer.style.display = 'flex';
     // If chatbox is restored as open, initialize RAG engine
     if (!isRAGInitialized) {
-      initRAGEngine().then(() => {
-        isRAGInitialized = true;
-      });
+      initRAGEngine();
     }
   }
 }
@@ -67,7 +66,6 @@ export async function toggleChat(): Promise<void> {
   // Lazy load RAG engine on first open
   if (isOpen && !isRAGInitialized) {
     await initRAGEngine();
-    isRAGInitialized = true;
   }
 
   // Save open state
@@ -79,13 +77,27 @@ export function renderChatUI(container: HTMLElement): void {
     <div class="chat-header">
       <h3>Ask me anything</h3>
       <div class="chat-header-actions">
+        <button class="chat-info" id="chat-info" title="About this AI feature">ℹ️</button>
         <button class="chat-clear" id="chat-clear" title="Clear chat history">🗑️</button>
         <button class="chat-close" id="chat-close">×</button>
       </div>
     </div>
-    <div class="chat-status" id="chat-status" style="display: none;">
-      Initializing chat...
+    <div class="chat-disclosure" id="chat-disclosure" style="display: none;">
+      <p>
+        <strong>This search assistant uses a local AI model</strong> (${'Xenova/e5-small-v2'}
+        via Transformers.js) that runs entirely in your browser.
+      </p>
+      <ul>
+        <li>Your questions and this site's docs are never sent to any server.</li>
+        <li>The model file (~${ESTIMATED_MODEL_SIZE_MB}MB) is downloaded once from
+          Hugging Face's CDN and cached by your browser — that download is the only
+          network request this feature makes.</li>
+        <li>No text generation: answers are direct excerpts from the docs, matched by
+          semantic similarity.</li>
+      </ul>
+      <button class="chat-disclosure-close" id="chat-disclosure-close">Got it</button>
     </div>
+    <div class="chat-status" id="chat-status" style="display: none;"></div>
     <div class="chat-messages" id="chat-messages">
       <div class="chat-message assistant">
         <div class="message-content">
@@ -111,6 +123,24 @@ export function renderChatUI(container: HTMLElement): void {
   const clearButton = document.getElementById('chat-clear');
   const sendButton = document.getElementById('chat-send');
   const input = document.getElementById('chat-input') as HTMLTextAreaElement;
+  const infoButton = document.getElementById('chat-info');
+  const disclosureClose = document.getElementById('chat-disclosure-close');
+
+  if (infoButton) {
+    infoButton.addEventListener('click', () => {
+      const disclosure = document.getElementById('chat-disclosure');
+      if (disclosure) {
+        disclosure.style.display = disclosure.style.display === 'none' ? 'block' : 'none';
+      }
+    });
+  }
+
+  if (disclosureClose) {
+    disclosureClose.addEventListener('click', () => {
+      const disclosure = document.getElementById('chat-disclosure');
+      if (disclosure) disclosure.style.display = 'none';
+    });
+  }
 
   if (closeButton) {
     closeButton.addEventListener('click', toggleChat);
@@ -151,16 +181,65 @@ async function initRAGEngine(): Promise<void> {
   if (!statusEl) return;
 
   try {
-    // Show status element (it might be hidden from previous sessions)
-    statusEl.style.display = 'block';
-    statusEl.textContent = 'Loading AI models...';
+    const { isModelCached } = await import('./rag-engine.js');
+    const cached = await isModelCached();
 
-    // Lazy load RAG engine
+    if (cached) {
+      await loadModel(statusEl, true);
+      return;
+    }
+
+    showDownloadConsent(statusEl);
+  } catch (error) {
+    console.error('Failed to check model cache:', error);
+    statusEl.style.display = 'block';
+    statusEl.textContent = '⚠️ Chat unavailable';
+  }
+}
+
+function showDownloadConsent(statusEl: HTMLElement): void {
+  statusEl.style.display = 'block';
+  statusEl.innerHTML = `
+    <div class="chat-consent">
+      <p>Model not found locally. Download the local AI search model
+        (~${ESTIMATED_MODEL_SIZE_MB}MB, downloaded once and cached in your browser)?</p>
+      <div class="chat-consent-actions">
+        <button class="chat-consent-download" id="chat-consent-download">Download</button>
+        <button class="chat-consent-decline" id="chat-consent-decline">Not now</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('chat-consent-download')?.addEventListener('click', () => {
+    loadModel(statusEl, false);
+  });
+
+  document.getElementById('chat-consent-decline')?.addEventListener('click', () => {
+    showDeclinedState(statusEl);
+  });
+}
+
+function showDeclinedState(statusEl: HTMLElement): void {
+  statusEl.style.display = 'block';
+  statusEl.innerHTML = `
+    AI search disabled.
+    <button class="chat-consent-retry" id="chat-consent-retry">Enable AI search</button>
+  `;
+  document.getElementById('chat-consent-retry')?.addEventListener('click', () => {
+    showDownloadConsent(statusEl);
+  });
+}
+
+async function loadModel(statusEl: HTMLElement, fromCache: boolean): Promise<void> {
+  try {
+    statusEl.style.display = 'block';
+    statusEl.textContent = fromCache ? 'Loading cached model...' : 'Downloading model...';
+
     const { initializeRAG, isRAGReady } = await import('./rag-engine.js');
 
     await initializeRAG((progress) => {
       statusEl.innerHTML = `
-        Loading models... ${Math.round(progress)}%
+        ${fromCache ? 'Loading model' : 'Downloading model'}... ${Math.round(progress)}%
         <div class="progress-bar">
           <div class="progress-fill" style="width: ${progress}%"></div>
         </div>
@@ -168,10 +247,12 @@ async function initRAGEngine(): Promise<void> {
     });
 
     if (isRAGReady()) {
+      isRAGInitialized = true;
       statusEl.style.display = 'none';
     }
   } catch (error) {
     console.error('Failed to initialize RAG:', error);
+    statusEl.style.display = 'block';
     statusEl.textContent = '⚠️ Chat unavailable';
   }
 }
@@ -197,6 +278,12 @@ function handleClearChat(): void {
 async function handleSendMessage(input: HTMLTextAreaElement): Promise<void> {
   const message = input.value.trim();
   if (!message) return;
+
+  if (!isRAGInitialized) {
+    const statusEl = document.getElementById('chat-status');
+    if (statusEl) showDownloadConsent(statusEl);
+    return;
+  }
 
   // Add user message
   addMessage({ role: 'user', content: message });
