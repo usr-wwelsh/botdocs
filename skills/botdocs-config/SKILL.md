@@ -20,6 +20,7 @@ the rest in.
   "title": "My Documentation",
   "description": "Project documentation",
   "theme": "classic",
+  "customCss": "custom.css",
   "attribution": true,
   "chat": {
     "enabled": true,
@@ -34,6 +35,11 @@ the rest in.
 ```
 
 - `theme` — one of `classic | material | minimal | slate | modern` (see below).
+- `customCss` — path to a CSS file, resolved relative to the directory the
+  config file lives in (not `inputDir`, which is often a regenerated staging
+  dir). Its contents are appended after the theme CSS in `bundle.css`
+  (`src/builder/index.ts`), so same-specificity selectors (e.g. `.site-title`,
+  `:root` variables) override the theme without `!important`.
 - `attribution` — shows/hides the "Built with Botdocs" footer link.
 - `chat.enabled` — turns the chatbot widget on/off for the build.
 - `build.chunkSize` / `chunkOverlap` — how markdown is split before embedding

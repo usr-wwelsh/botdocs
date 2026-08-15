@@ -25,6 +25,11 @@ export async function build(options: BuildOptions): Promise<void> {
 
   // Load config
   const config = loadConfig(configPath, inputDir);
+  // customCss resolves relative to wherever the config file actually lives,
+  // not inputDir — inputDir is often a regenerated staging directory.
+  const configDir = configPath && existsSync(configPath)
+    ? dirname(resolve(configPath))
+    : inputDir;
 
   // Override chat enabled setting if specified in CLI
   if (chatEnabled !== undefined) {
@@ -163,6 +168,19 @@ export async function build(options: BuildOptions): Promise<void> {
     const fallbackPath = join(themesDir, 'classic.css');
     if (existsSync(fallbackPath)) {
       bundledCss += readFileSync(fallbackPath, 'utf-8') + '\n\n';
+    }
+  }
+
+  // Append user-supplied custom CSS last so it overrides theme rules of equal specificity
+  if (config.customCss) {
+    const customCssPath = resolve(configDir, config.customCss);
+    if (existsSync(customCssPath)) {
+      bundledCss += readFileSync(customCssPath, 'utf-8') + '\n';
+      if (verbose) {
+        console.log(`Appended custom CSS: ${customCssPath}`);
+      }
+    } else {
+      console.warn(`customCss file not found: ${customCssPath}`);
     }
   }
 
