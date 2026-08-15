@@ -122,7 +122,7 @@ body {
   box-shadow: 0 4px 12px rgba(100, 108, 255, 0.3);
 }
 
-.nav-list li:has(> .nav-list) {
+.nav-list li.nav-group {
   flex-basis: 100%;
   display: flex;
   flex-wrap: wrap;
@@ -130,8 +130,19 @@ body {
   gap: 0.5rem;
 }
 
-.nav-list li:has(> .nav-list) > a {
+.nav-list li.nav-group > a {
   font-weight: 700;
+}
+
+.nav-list li.nav-group > a::after {
+  content: '›';
+  margin-left: 0.375rem;
+  display: inline-block;
+  transition: transform 0.2s;
+}
+
+.nav-list li.nav-group:has(> .nav-list) > a::after {
+  transform: rotate(90deg);
 }
 
 .nav-list .nav-list {

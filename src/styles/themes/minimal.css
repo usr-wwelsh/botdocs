@@ -109,7 +109,7 @@ body {
   border-bottom-color: var(--text-primary);
 }
 
-.nav-list li:has(> .nav-list) {
+.nav-list li.nav-group {
   flex-basis: 100%;
   display: flex;
   flex-wrap: wrap;
@@ -118,9 +118,20 @@ body {
   gap: 0.375rem 1rem;
 }
 
-.nav-list li:has(> .nav-list) > a {
+.nav-list li.nav-group > a {
   color: var(--text-primary);
   font-weight: 600;
+}
+
+.nav-list li.nav-group > a::after {
+  content: '›';
+  margin-left: 0.25rem;
+  display: inline-block;
+  transition: transform 0.2s;
+}
+
+.nav-list li.nav-group:has(> .nav-list) > a::after {
+  transform: rotate(90deg);
 }
 
 .nav-list .nav-list {

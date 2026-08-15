@@ -65,6 +65,7 @@ export class SiteGenerator {
 
     // Generate navigation
     const navigation = this.buildNavigation(this.documents);
+    const pageSequence = this.buildPageSequence(navigation);
 
     // Load templates from source directory (not dist)
     // From dist/src/builder, go to project root, then to src/templates
@@ -90,8 +91,7 @@ export class SiteGenerator {
       const isIndex = doc.relativePath === 'README.md' || doc.relativePath === 'index.md';
 
       // Prepare navigation data
-      const prevDoc = i > 0 ? this.documents[i - 1] : null;
-      const nextDoc = i < this.documents.length - 1 ? this.documents[i + 1] : null;
+      const adjacent = pageSequence.get(doc.url);
 
       // Render document content
       const contentTemplate = isIndex ? indexTemplate : docPageTemplate;
@@ -107,18 +107,8 @@ export class SiteGenerator {
               url: d.url,
             }))
           : undefined,
-        prevPage: prevDoc
-          ? {
-              title: prevDoc.metadata.title,
-              url: prevDoc.url,
-            }
-          : undefined,
-        nextPage: nextDoc
-          ? {
-              title: nextDoc.metadata.title,
-              url: nextDoc.url,
-            }
-          : undefined,
+        prevPage: adjacent?.prev,
+        nextPage: adjacent?.next,
       });
 
       // Render full page with layout
@@ -215,7 +205,10 @@ export class SiteGenerator {
   }
 
   /**
-   * Render navigation HTML
+   * Render navigation HTML. Folder groups only expand their children when
+   * the current page is the group's root or one of its children — every
+   * other page sees the group collapsed to a single link that leads to
+   * its root README.
    */
   private renderNavigation(items: NavigationItem[], currentUrl?: string): string {
     if (items.length === 0) return '';
@@ -224,13 +217,19 @@ export class SiteGenerator {
 
     for (const item of items) {
       const isActive = item.url === currentUrl;
-      const activeClass = isActive ? ' class="active"' : '';
+      const hasChildren = !!item.children && item.children.length > 0;
+      const isExpanded =
+        hasChildren && (isActive || item.children!.some((child) => child.url === currentUrl));
 
-      html += `<li${activeClass}>`;
-      html += `<a href="${item.url}"${activeClass}>${item.title}</a>`;
+      const liClasses = [isActive && 'active', hasChildren && 'nav-group']
+        .filter(Boolean)
+        .join(' ');
 
-      if (item.children && item.children.length > 0) {
-        html += this.renderNavigation(item.children, currentUrl);
+      html += `<li${liClasses ? ` class="${liClasses}"` : ''}>`;
+      html += `<a href="${item.url}"${isActive ? ' class="active"' : ''}>${item.title}</a>`;
+
+      if (isExpanded) {
+        html += this.renderNavigation(item.children!, currentUrl);
       }
 
       html += '</li>';
@@ -239,6 +238,41 @@ export class SiteGenerator {
     html += '</ul>';
 
     return html;
+  }
+
+  /**
+   * Compute prev/next page links that walk the top-level navigation
+   * (root README to root README) rather than the flat, alphabetical
+   * document list — so paging from a folder's root never dips into that
+   * folder's children. Paging from within a group's children walks those
+   * siblings first, then rolls into the next top-level entry.
+   */
+  private buildPageSequence(
+    navigation: NavigationItem[]
+  ): Map<string, { prev?: { title: string; url: string }; next?: { title: string; url: string } }> {
+    const positions = new Map<
+      string,
+      { prev?: { title: string; url: string }; next?: { title: string; url: string } }
+    >();
+
+    const asLink = (item: NavigationItem) => ({ title: item.title, url: item.url });
+
+    for (let i = 0; i < navigation.length; i++) {
+      const item = navigation[i];
+      const prevTop = i > 0 ? asLink(navigation[i - 1]) : undefined;
+      const nextTop = i < navigation.length - 1 ? asLink(navigation[i + 1]) : undefined;
+
+      positions.set(item.url, { prev: prevTop, next: nextTop });
+
+      const children = item.children ?? [];
+      for (let j = 0; j < children.length; j++) {
+        const prev = j === 0 ? asLink(item) : asLink(children[j - 1]);
+        const next = j < children.length - 1 ? asLink(children[j + 1]) : nextTop;
+        positions.set(children[j].url, { prev, next });
+      }
+    }
+
+    return positions;
   }
 
   /**

@@ -105,8 +105,21 @@ body {
   box-shadow: var(--shadow-1);
 }
 
-.nav-list li:has(> .nav-list) > a {
+.nav-list li.nav-group > a {
   font-weight: 700;
+  position: relative;
+  padding-right: 1.75rem;
+}
+
+.nav-list li.nav-group > a::after {
+  content: '›';
+  position: absolute;
+  right: 1rem;
+  transition: transform 0.2s;
+}
+
+.nav-list li.nav-group:has(> .nav-list) > a::after {
+  transform: rotate(90deg);
 }
 
 .nav-list .nav-list {
