@@ -1,5 +1,5 @@
 import { readFileSync, writeFileSync, readdirSync, mkdirSync, cpSync } from 'fs';
-import { join, dirname, relative, resolve } from 'path';
+import { join, dirname, relative, resolve, basename } from 'path';
 import { MarkdownProcessor } from './markdown-processor.js';
 import { TemplateEngine } from './template-engine.js';
 import { ProcessedDocument, NavigationItem } from '../types/document.js';
@@ -159,19 +159,49 @@ export class SiteGenerator {
   }
 
   /**
-   * Build navigation structure from documents
+   * Build navigation structure from documents, grouping by top-level
+   * folder so e.g. every doc under `path-of-python/` (its README plus
+   * anything in `path-of-python/docs/`) nests under one "Path of Python"
+   * entry instead of interleaving flat with every other folder's pages.
+   * Files at the root (no folder) stay flat, top-level entries.
    */
   private buildNavigation(documents: ProcessedDocument[]): NavigationItem[] {
     const nav: NavigationItem[] = [];
+    const groups = new Map<string, NavigationItem>();
 
     for (const doc of documents) {
       const parts = doc.relativePath.split('/');
-      const title = doc.metadata.title || parts[parts.length - 1].replace(/\.md$/, '');
+      const title = doc.metadata.title || basename(doc.relativePath, '.md');
+      const isRootIndex = doc.relativePath === 'README.md' || doc.relativePath === 'index.md';
 
-      nav.push({
-        title,
-        url: doc.url,
-      });
+      if (parts.length === 1) {
+        if (!isRootIndex) {
+          nav.push({ title, url: doc.url });
+        }
+        continue;
+      }
+
+      const folder = parts[0];
+      const restOfPath = parts.slice(1).join('/');
+      const isFolderIndex = restOfPath === 'README.md' || restOfPath === 'index.md';
+
+      let group = groups.get(folder);
+      if (!group) {
+        group = {
+          title: folder.replace(/[-_]/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase()),
+          url: doc.url,
+          children: [],
+        };
+        groups.set(folder, group);
+        nav.push(group);
+      }
+
+      if (isFolderIndex) {
+        group.title = title;
+        group.url = doc.url;
+      } else {
+        group.children!.push({ title, url: doc.url });
+      }
     }
 
     return nav;

@@ -109,6 +109,29 @@ body {
   border-bottom-color: var(--text-primary);
 }
 
+.nav-list li:has(> .nav-list) {
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: baseline;
+  gap: 0.375rem 1rem;
+}
+
+.nav-list li:has(> .nav-list) > a {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.nav-list .nav-list {
+  margin: 0;
+  gap: 0.375rem 1rem;
+}
+
+.nav-list .nav-list a {
+  font-size: 0.8rem;
+}
+
 /* Main Content - centered, no sidebar offset */
 .main-content {
   margin-left: 0;

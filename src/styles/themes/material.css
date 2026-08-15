@@ -105,6 +105,22 @@ body {
   box-shadow: var(--shadow-1);
 }
 
+.nav-list li:has(> .nav-list) > a {
+  font-weight: 700;
+}
+
+.nav-list .nav-list {
+  margin-top: 0.25rem;
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--bg-tertiary);
+}
+
+.nav-list .nav-list a {
+  font-weight: 400;
+  font-size: 0.85rem;
+  padding: 0.5rem 0.75rem;
+}
+
 /* Main Content */
 .main-content {
   margin-left: var(--sidebar-width);

@@ -112,6 +112,21 @@ body {
   font-weight: 600;
 }
 
+.nav-list li:has(> .nav-list) > a {
+  color: var(--sidebar-text);
+  font-weight: 600;
+}
+
+.nav-list .nav-list {
+  margin-top: 0.125rem;
+  padding-left: 1rem;
+}
+
+.nav-list .nav-list a {
+  font-weight: 400;
+  font-size: 0.85rem;
+}
+
 /* Main Content - Split screen with code examples */
 .main-content {
   margin-left: var(--sidebar-width);

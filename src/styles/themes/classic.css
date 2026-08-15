@@ -96,6 +96,22 @@ body {
   font-weight: 500;
 }
 
+.nav-list li:has(> .nav-list) > a {
+  font-weight: 600;
+}
+
+.nav-list .nav-list {
+  margin-top: 0.375rem;
+  padding-left: 0.75rem;
+  border-left: 1px solid var(--border-color);
+}
+
+.nav-list .nav-list a {
+  font-weight: 400;
+  font-size: 0.9rem;
+  padding: 0.375rem 0.75rem;
+}
+
 /* Main Content */
 .main-content {
   margin-left: var(--sidebar-width);
