@@ -12,5 +12,4 @@ export const defaultOptions: Partial<CliOptions> = {
   output: 'output',
   noChat: false,
   verbose: false,
-  theme: 'classic',
 };

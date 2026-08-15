@@ -24,7 +24,7 @@ program
   .option('-o, --output <dir>', 'Output directory for generated site', defaultOptions.output)
   .option('--no-chat', 'Disable AI chatbot functionality')
   .option('-c, --config <file>', 'Path to config file (botdocs.config.json)')
-  .option('-t, --theme <theme>', 'Theme to use (classic, material, minimal, slate, modern)', defaultOptions.theme)
+  .option('-t, --theme <theme>', 'Theme to use (classic, material, minimal, slate, modern); overrides config file if set')
   .option('-v, --verbose', 'Enable verbose logging')
   .action(async (input: string, options: CliOptions) => {
     try {
@@ -36,7 +36,7 @@ program
         console.log(`Input: ${inputDir}`);
         console.log(`Output: ${outputDir}`);
         console.log(`Chat enabled: ${!options.noChat}`);
-        console.log(`Theme: ${options.theme || defaultOptions.theme}`);
+        console.log(`Theme override: ${options.theme || '(none — using config file or default)'}`);
       }
 
       await build({
