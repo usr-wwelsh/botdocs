@@ -2,7 +2,7 @@
  * Client-side embedder using Transformers.js
  */
 
-import { pipeline, env } from '@xenova/transformers';
+import { pipeline, env } from '@huggingface/transformers';
 
 // Configure for browser environment
 env.allowLocalModels = false;
