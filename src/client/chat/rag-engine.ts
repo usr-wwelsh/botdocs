@@ -4,7 +4,9 @@
  */
 
 import { getEmbedder } from './embedder.js';
-import { getVectorSearch } from './vector-search.js';
+import { getVectorSearch, SearchResult } from './vector-search.js';
+import { extractSnippet, SnippetExtraction } from './sentence-extractor.js';
+import { ChunkMetadata } from '../../types/vector-db.js';
 
 export interface RAGResponse {
   answer: string;
@@ -13,6 +15,8 @@ export interface RAGResponse {
 
 let isInitialized = false;
 let topK = 5;
+
+const HIGHLY_RELEVANT_SCORE = 0.7;
 
 /**
  * Check whether the embedding model is already cached in the browser
@@ -72,26 +76,25 @@ export async function queryRAG(
     const vectorSearch = getVectorSearch();
     const searchResults = await vectorSearch.search(queryEmbedding, k);
 
-    // Step 3: Format results as a conversational response
-    const answer = formatSearchResults(query, searchResults);
+    // Step 3: Re-rank sentences/segments within the top chunks against the
+    // query so snippets are extracted, not char-sliced.
+    const topResults = searchResults.slice(0, 3);
+    const extracted = await Promise.all(
+      topResults.map((result) =>
+        extractSnippet(result.chunk.text, queryEmbedding, (texts) =>
+          embedder.embedBatch(texts)
+        )
+      )
+    );
 
-    // Step 4: Extract sources with deep links
-    const sources = searchResults.map((result) => {
-      const { metadata } = result.chunk;
-      let url = metadata.url;
+    // Step 4: Format results as a conversational response
+    const answer = formatSearchResults(query, searchResults, topResults, extracted);
 
-      // Add anchor for deep linking if heading exists
-      if (metadata.headingId) {
-        url += `#${metadata.headingId}`;
-      }
-
-      return {
-        title: metadata.heading
-          ? `${metadata.title} → ${metadata.heading}`
-          : metadata.title,
-        url,
-      };
-    });
+    // Step 5: Extract sources with deep links
+    const sources = searchResults.map((result) => ({
+      title: sourceLabel(result.chunk.metadata),
+      url: buildLink(result.chunk.metadata),
+    }));
 
     // Remove duplicates from sources
     const uniqueSources = Array.from(
@@ -108,23 +111,55 @@ export async function queryRAG(
   }
 }
 
+function buildLink(metadata: ChunkMetadata): string {
+  let link = metadata.url;
+  if (metadata.headingId) {
+    link += `#${metadata.headingId}`;
+  }
+  return link;
+}
+
+function sourceLabel(metadata: ChunkMetadata): string {
+  return metadata.heading ? `${metadata.title} → ${metadata.heading}` : metadata.title;
+}
+
 /**
  * Format search results as a conversational response
  */
-function formatSearchResults(query: string, results: any[]): string {
-  if (results.length === 0) {
+function formatSearchResults(
+  query: string,
+  allResults: SearchResult[],
+  topResults: SearchResult[],
+  extracted: SnippetExtraction[]
+): string {
+  if (allResults.length === 0) {
     return "I couldn't find anything about that in the documentation. Try rephrasing your question or browse the navigation menu to explore available topics.";
   }
 
-  // Analyze query intent for better conversational tone
   const isHowTo = /^how (to|do|can)/i.test(query);
   const isWhat = /^what (is|are)/i.test(query);
   const isWhy = /^why/i.test(query);
-  const isWhere = /^where/i.test(query);
 
-  // Build a natural, conversational response
-  const topResults = results.slice(0, 3);
   let response = '';
+
+  // Quick answer: when multiple sources strongly agree, lead with the
+  // single best-matching sentence from each — a synthesized, extractive
+  // answer instead of just a list of chunks.
+  const quickAnswerItems = topResults
+    .map((result, index) => ({ result, extract: extracted[index] }))
+    .filter(
+      ({ result, extract }) =>
+        result.score > HIGHLY_RELEVANT_SCORE && extract.topScore > HIGHLY_RELEVANT_SCORE
+    );
+
+  if (quickAnswerItems.length > 1) {
+    response += '**Quick answer:**\n\n';
+    for (const { result, extract } of quickAnswerItems) {
+      const link = buildLink(result.chunk.metadata);
+      response += `- ${extract.topSegment} ([${sourceLabel(result.chunk.metadata)}](${link}))\n`;
+    }
+    response += '\n---\n\n';
+  }
 
   // Add contextual intro
   if (isHowTo) {
@@ -133,7 +168,7 @@ function formatSearchResults(query: string, results: any[]): string {
     response += "Let me explain:\n\n";
   } else if (isWhy) {
     response += "Here's what the docs say about that:\n\n";
-  } else if (results.length === 1) {
+  } else if (allResults.length === 1) {
     response += "I found this relevant section:\n\n";
   } else {
     response += `I found ${topResults.length} relevant sections:\n\n`;
@@ -143,68 +178,36 @@ function formatSearchResults(query: string, results: any[]): string {
   topResults.forEach((result, index) => {
     const { chunk, score } = result;
     const heading = chunk.metadata.heading || chunk.metadata.title;
-    const text = chunk.text.trim();
-
-    // Create deep link
-    let link = chunk.metadata.url;
-    if (chunk.metadata.headingId) {
-      link += `#${chunk.metadata.headingId}`;
-    }
+    const link = buildLink(chunk.metadata);
+    const snippet = extracted[index].snippet;
 
     // Add visual separation between results
     if (index > 0) {
       response += '\n\n---\n\n';
     }
 
-    // Format with heading, content preview, and link
+    // Format with heading, extracted snippet, and link
     response += `**${heading}**\n\n`;
-    response += formatTextPreview(text);
+    response += snippet;
     response += `\n\n→ [View full section](${link})`;
 
     // Add relevance indicator for highly relevant matches
-    if (score > 0.7) {
+    if (score > HIGHLY_RELEVANT_SCORE) {
       response += ' *(highly relevant)*';
     }
   });
 
   // Add helpful footer
-  if (results.length > 3) {
-    const moreCount = results.length - 3;
+  if (allResults.length > 3) {
+    const moreCount = allResults.length - 3;
     response += `\n\n---\n\n💡 **Found ${moreCount} more related section${
       moreCount > 1 ? 's' : ''
     }** — check the sources below for more details.`;
-  } else if (results.length === 1) {
+  } else if (allResults.length === 1) {
     response += '\n\n*Have a follow-up question? Just ask!*';
   }
 
   return response;
-}
-
-/**
- * Format text content with smart truncation and code block handling
- */
-function formatTextPreview(text: string): string {
-  // If text is short enough, return as-is
-  if (text.length <= 400) {
-    return text;
-  }
-
-  // Check if it contains code blocks
-  const hasCodeBlock = text.includes('```');
-
-  if (hasCodeBlock) {
-    // Keep code blocks intact, but truncate surrounding text if needed
-    const codeBlockMatch = text.match(/([\s\S]*?)(```[\s\S]*?```)([\s\S]*)/);
-    if (codeBlockMatch) {
-      const [, before, code, after] = codeBlockMatch;
-      const beforeTrimmed = before.trim().slice(0, 150);
-      const afterTrimmed = after.trim().slice(0, 150);
-      return `${beforeTrimmed}\n\n${code}\n\n${afterTrimmed}...`;
-    }
-  }
-
-  // Standard truncation for plain text
-  return text.slice(0, 400) + '...';
 }
 
 /**

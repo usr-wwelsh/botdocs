@@ -109,6 +109,27 @@ export class ClientEmbedder {
   }
 
   /**
+   * Generate embeddings for multiple texts in a single forward pass.
+   * Used for re-ranking sentences/segments within already-retrieved chunks.
+   */
+  async embedBatch(texts: string[], prefix: 'query' | 'passage' = 'passage'): Promise<number[][]> {
+    if (texts.length === 0) return [];
+
+    if (!this.model) {
+      await this.initialize();
+    }
+
+    const prefixedTexts = texts.map((text) => `${prefix}: ${text}`);
+
+    const output = await this.model(prefixedTexts, {
+      pooling: 'mean',
+      normalize: true,
+    });
+
+    return output.tolist();
+  }
+
+  /**
    * Check if model is ready
    */
   isReady(): boolean {
