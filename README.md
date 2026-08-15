@@ -73,6 +73,7 @@ Create `botdocs.config.json` in your docs directory:
   "title": "My Documentation",
   "description": "Project docs",
   "theme": "classic",
+  "customCss": "custom.css",
   "attribution": true,
   "chat": { "enabled": true },
   "build": {
@@ -90,6 +91,7 @@ Create `botdocs.config.json` in your docs directory:
 | `title` | string | `"Documentation"` | Site title |
 | `description` | string | `"Project documentation"` | Site description |
 | `theme` | string | `"classic"` | Theme to use (classic, material, minimal, slate, modern) |
+| `customCss` | string | none | Path to a CSS file, resolved relative to the config file's directory. Appended after theme CSS in `bundle.css`, so same-specificity selectors override the theme without `!important` |
 | `attribution` | boolean | `true` | Show "Built with Botdocs" footer link |
 | `chat.enabled` | boolean | `true` | Enable AI chatbot |
 | `chat.welcomeMessage` | string | `"Ask me anything about the docs!"` | Chatbot welcome message |
@@ -113,6 +115,7 @@ description: Quick start guide
 1. **Build**: Parses markdown → generates embeddings → creates `vector-db.json`
 2. **Runtime**: User query → embed → search vector DB → return relevant chunks
 3. **No LLM**: Pure semantic search, not AI text generation
+4. **Consent**: On first use, visitors are asked before the embedding model downloads to their browser, with a disclosure of what runs locally
 
 ## Architecture
 
