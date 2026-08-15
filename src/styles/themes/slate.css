@@ -118,12 +118,9 @@ body {
   flex: 1;
   padding: 0;
   background: var(--bg-primary);
-  display: flex;
-  gap: 0;
 }
 
 .content-wrapper {
-  flex: 1;
   max-width: none;
   padding: 3rem 2.5rem;
   background: var(--bg-primary);
