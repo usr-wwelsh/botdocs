@@ -71,7 +71,7 @@ file can be placed in the input directory to configure the build:
     "chunkOverlap": 50,
     "minChunkSize": 15,
     "topK": 3,
-    "minScore": 0.5
+    "minScore": 0.75
   }
 }
 .fi
@@ -105,7 +105,9 @@ score so an off-topic query returns fewer or no results instead of always
 padding out to
 .BR topK .
 Defaults to
-.BR 0.5 .
+.BR 0.75 ,
+since the e5 embedding model has a fairly high similarity floor even for
+unrelated text.
 .SH EXAMPLES
 Build a documentation site from a directory:
 .PP

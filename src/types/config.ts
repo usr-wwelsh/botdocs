@@ -42,6 +42,6 @@ export const defaultConfig: BotdocsConfig = {
     chunkOverlap: 50,
     minChunkSize: 15,
     topK: 3,
-    minScore: 0.5,
+    minScore: 0.75,
   },
 };

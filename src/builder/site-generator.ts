@@ -126,7 +126,7 @@ export class SiteGenerator {
         chatEnabled: config.chat?.enabled,
         searchConfigJson: JSON.stringify({
           topK: config.build?.topK ?? 3,
-          minScore: config.build?.minScore ?? 0.5,
+          minScore: config.build?.minScore ?? 0.75,
         }),
         attribution: config.attribution !== false, // defaults to true
       });

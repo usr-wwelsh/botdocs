@@ -18,6 +18,16 @@ export interface SearchResult {
 // far down either ranking don't swing the fused order much.
 const RRF_K = 60;
 
+// A small embedding model's raw cosine floor is noisy enough on a narrow,
+// single-topic corpus that a completely off-topic query (e.g. a proper
+// noun from a different domain) can score as high as, or higher than, a
+// genuinely on-topic one — no fixed minScore can separate them. Requiring
+// at least one literal query term to appear somewhere in the chunk (BM25
+// score > 0) catches what the cosine gate misses, since an unrelated
+// query shares no vocabulary with the corpus at all. Near-exact semantic
+// matches (paraphrases with zero literal overlap) are still let through.
+const KEYWORD_BYPASS_SCORE = 0.9;
+
 export class VectorSearch {
   private vectorDB: VectorDatabase | null = null;
   private bm25Index: BM25Index | null = null;
@@ -101,9 +111,11 @@ export class VectorSearch {
         const vRank = vectorRank.get(chunk.id)!;
         const bRank = bm25Rank.get(chunk.id)!;
         const rrfScore = 1 / (RRF_K + vRank + 1) + 1 / (RRF_K + bRank + 1);
-        return { chunk, score, rrfScore };
+        const bm25Score = bm25Scores.get(chunk.id) ?? 0;
+        return { chunk, score, rrfScore, bm25Score };
       })
       .filter((r) => r.score >= minScore)
+      .filter((r) => r.bm25Score > 0 || r.score >= KEYWORD_BYPASS_SCORE)
       .sort((a, b) => b.rrfScore - a.rrfScore);
 
     return fused.slice(0, topK).map(({ chunk, score }) => ({ chunk, score }));

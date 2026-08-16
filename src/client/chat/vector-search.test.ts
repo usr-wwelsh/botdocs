@@ -85,6 +85,40 @@ test('returns raw cosine similarity as the score, not the fused rank score', asy
   assert.equal(results[0].score, 1);
 });
 
+test('drops a result with no literal keyword overlap in the query unless its vector score is near-exact', async () => {
+  const search = new VectorSearch();
+  search.setDatabase(
+    makeDB([
+      makeChunk(
+        'plausible-but-unrelated',
+        [0.8, Math.sqrt(1 - 0.64)],
+        'talks about totally different concepts using different words'
+      ),
+    ])
+  );
+
+  // A small embedding model's cosine floor is noisy enough that an
+  // off-topic query can still score above a fixed threshold on a narrow
+  // corpus — e.g. "quantum entanglement" outscoring a genuinely on-topic
+  // query on a game-editor docs site. Requiring some literal keyword
+  // overlap (unless the vector match is near-exact) catches what a
+  // cosine-only gate misses.
+  const results = await search.search([1, 0], 'gadget', 5, 0.5);
+
+  assert.equal(results.length, 0);
+});
+
+test('keeps a near-exact semantic match even with zero keyword overlap', async () => {
+  const search = new VectorSearch();
+  search.setDatabase(
+    makeDB([makeChunk('near-exact', [1, 0], 'a passage that never uses the query term')])
+  );
+
+  const results = await search.search([1, 0], 'gadget', 5, 0.5);
+
+  assert.equal(results.length, 1);
+});
+
 test('still respects topK after threshold filtering and hybrid re-ranking', async () => {
   const search = new VectorSearch();
   search.setDatabase(

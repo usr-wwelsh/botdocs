@@ -81,7 +81,7 @@ Create `botdocs.config.json` in your docs directory:
     "chunkOverlap": 50,
     "minChunkSize": 15,
     "topK": 3,
-    "minScore": 0.5
+    "minScore": 0.75
   }
 }
 ```
@@ -101,7 +101,7 @@ Create `botdocs.config.json` in your docs directory:
 | `build.chunkOverlap` | number | `50` | Overlap between chunks |
 | `build.minChunkSize` | number | `15` | Chunks smaller than this (estimated tokens) get folded into a neighboring chunk instead of becoming a standalone, low-signal search result |
 | `build.topK` | number | `3` | Number of results to return |
-| `build.minScore` | number | `0.5` | Minimum vector similarity (0-1) a result must reach to be returned at all, regardless of `topK` — filters out weak/off-topic matches instead of always padding results |
+| `build.minScore` | number | `0.75` | Minimum vector similarity (0-1) a result must reach to be returned at all, regardless of `topK` — filters out weak/off-topic matches instead of always padding results. The e5 embedding model has a fairly high similarity floor even for unrelated text, so this needs to sit well above 0.5 to actually gate anything |
 
 ## Front Matter
 
