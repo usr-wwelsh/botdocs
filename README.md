@@ -1,5 +1,7 @@
 # Botdocs
 
+[![Read about the commits](https://img.shields.io/badge/commits-code%20blog-1a1a1a?style=flat-square)](https://wwel.sh/digest.html?repo=botdocs)
+
 [![npm version](https://img.shields.io/npm/v/botdocs.svg)](https://www.npmjs.com/package/botdocs)
 
 Convert markdown documentation into beautiful static sites with AI-powered semantic search — no backend required.
