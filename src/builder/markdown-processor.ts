@@ -105,7 +105,7 @@ export class MarkdownProcessor {
 
           // Try to get the language, fall back to txt if not found
           const languages = highlighter.getLoadedLanguages();
-          const safeLang = languages.includes(lang as any) ? lang : 'txt';
+          const safeLang = languages.includes(lang) ? lang : 'txt';
 
           return highlighter.codeToHtml(code, {
             lang: safeLang,

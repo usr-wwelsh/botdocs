@@ -3,7 +3,7 @@ export interface DocumentMetadata {
   description?: string;
   date?: string;
   author?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface ProcessedDocument {

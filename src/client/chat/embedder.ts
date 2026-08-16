@@ -2,7 +2,7 @@
  * Client-side embedder using Transformers.js
  */
 
-import { pipeline, env } from '@huggingface/transformers';
+import { pipeline, env, FeatureExtractionPipeline, ProgressInfo } from '@huggingface/transformers';
 
 // Configure for browser environment
 env.allowLocalModels = false;
@@ -12,15 +12,8 @@ const MODEL_CACHE_NAME = 'transformers-cache';
 // Xenova/e5-small-v2, quantized ONNX weights (the file transformers.js fetches by default)
 export const ESTIMATED_MODEL_SIZE_MB = 30;
 
-export type ModelProgress = {
-  status: 'initiate' | 'download' | 'progress' | 'done';
-  file: string;
-  loaded?: number;
-  total?: number;
-};
-
 export class ClientEmbedder {
-  private model: any = null;
+  private model: FeatureExtractionPipeline | null = null;
   private modelName: string;
   private isLoading: boolean = false;
 
@@ -65,7 +58,7 @@ export class ClientEmbedder {
 
       this.model = await pipeline('feature-extraction', this.modelName, {
         progress_callback: onProgress
-          ? (event: ModelProgress) => {
+          ? (event: ProgressInfo) => {
               if (event.status !== 'progress' || !event.total) return;
 
               fileProgress.set(event.file, {
@@ -97,6 +90,10 @@ export class ClientEmbedder {
       await this.initialize();
     }
 
+    if (!this.model) {
+      throw new Error('Failed to initialize embedding model');
+    }
+
     // Prepend "query: " prefix for e5 models
     const prefixedText = `query: ${text}`;
 
@@ -117,6 +114,9 @@ export class ClientEmbedder {
 
     if (!this.model) {
       await this.initialize();
+    }
+    if (!this.model) {
+      throw new Error('Failed to initialize embedding model');
     }
 
     const prefixedTexts = texts.map((text) => `${prefix}: ${text}`);

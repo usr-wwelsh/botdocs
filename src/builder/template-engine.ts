@@ -6,7 +6,7 @@ export class TemplateEngine {
    * Render a template with variables
    * Replaces {{variableName}} with values from data object
    */
-  render(template: string, data: Record<string, any>): string {
+  render(template: string, data: Record<string, unknown>): string {
     return template.replace(/\{\{(\w+)\}\}/g, (match, key) => {
       return data[key] !== undefined ? String(data[key]) : match;
     });
@@ -16,7 +16,7 @@ export class TemplateEngine {
    * Render a template with nested variables
    * Supports {{object.property}} syntax
    */
-  renderAdvanced(template: string, data: Record<string, any>): string {
+  renderAdvanced(template: string, data: Record<string, unknown>): string {
     return template.replace(/\{\{([\w.]+)\}\}/g, (match, path) => {
       const value = this.getNestedProperty(data, path);
       return value !== undefined ? String(value) : match;
@@ -26,8 +26,16 @@ export class TemplateEngine {
   /**
    * Get nested property from object using dot notation
    */
-  private getNestedProperty(obj: any, path: string): any {
-    return path.split('.').reduce((current, key) => current?.[key], obj);
+  private getNestedProperty(obj: Record<string, unknown>, path: string): unknown {
+    return path
+      .split('.')
+      .reduce<unknown>(
+        (current, key) =>
+          current && typeof current === 'object'
+            ? (current as Record<string, unknown>)[key]
+            : undefined,
+        obj
+      );
   }
 
   /**
@@ -35,7 +43,7 @@ export class TemplateEngine {
    * Supports {{#if variable}}...{{/if}} syntax
    * Handles nested conditionals recursively
    */
-  renderWithConditionals(template: string, data: Record<string, any>): string {
+  renderWithConditionals(template: string, data: Record<string, unknown>): string {
     let result = template;
     let previousResult = '';
 
@@ -63,7 +71,7 @@ export class TemplateEngine {
    * Render template with loops
    * Supports {{#each items}}...{{/each}} syntax
    */
-  renderWithLoops(template: string, data: Record<string, any>): string {
+  renderWithLoops(template: string, data: Record<string, unknown>): string {
     // Handle each blocks
     let result = template.replace(
       /\{\{#each\s+(\w+)\}\}([\s\S]*?)\{\{\/each\}\}/g,

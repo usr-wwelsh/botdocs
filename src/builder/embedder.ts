@@ -1,10 +1,10 @@
-import { pipeline, env } from '@huggingface/transformers';
+import { pipeline, env, FeatureExtractionPipeline } from '@huggingface/transformers';
 
 // Disable local model loading - use Hugging Face
 env.allowLocalModels = false;
 
 export class Embedder {
-  private model: any;
+  private model: FeatureExtractionPipeline | null = null;
   private modelName: string;
   private dimension: number;
 
@@ -30,6 +30,9 @@ export class Embedder {
   async embed(text: string): Promise<number[]> {
     if (!this.model) {
       await this.initialize();
+    }
+    if (!this.model) {
+      throw new Error('Failed to initialize embedding model');
     }
 
     // Prepend "passage: " prefix for e5 models
