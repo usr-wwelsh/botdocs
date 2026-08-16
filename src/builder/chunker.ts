@@ -9,6 +9,13 @@ export interface TextChunk {
 export interface ChunkerOptions {
   maxChunkSize: number;
   chunkOverlap: number;
+  /**
+   * Chunks smaller than this (in estimated tokens) are folded into a
+   * neighboring chunk instead of being kept as standalone, low-information
+   * entries in the vector DB (e.g. a heading followed by a single short
+   * line). Set to 0 to disable merging.
+   */
+  minChunkSize: number;
 }
 
 /**
@@ -21,6 +28,7 @@ export class Chunker {
     this.options = {
       maxChunkSize: options.maxChunkSize || 500,
       chunkOverlap: options.chunkOverlap || 50,
+      minChunkSize: options.minChunkSize ?? 15,
     };
   }
 
@@ -103,7 +111,50 @@ export class Chunker {
       );
     }
 
-    return chunks.filter((chunk) => chunk.text.trim().length > 0);
+    const nonEmptyChunks = chunks.filter((chunk) => chunk.text.trim().length > 0);
+    return this.mergeSmallChunks(nonEmptyChunks);
+  }
+
+  /**
+   * Fold chunks smaller than minChunkSize into a neighbor so a heading with
+   * little or no body content doesn't become its own low-signal retrieval
+   * candidate.
+   */
+  private mergeSmallChunks(chunks: TextChunk[]): TextChunk[] {
+    const minTokens = this.options.minChunkSize;
+    if (minTokens <= 0 || chunks.length <= 1) return chunks;
+
+    const merged: TextChunk[] = [];
+
+    for (const chunk of chunks) {
+      const prev = merged[merged.length - 1];
+      if (prev && this.estimateTokens(prev.text) < minTokens) {
+        // Absorb forward: the small chunk becomes the lead-in for the next
+        // section, which takes over as the chunk's heading/metadata.
+        merged[merged.length - 1] = {
+          text: `${prev.text}\n\n${chunk.text}`,
+          metadata: chunk.metadata,
+        };
+      } else {
+        merged.push(chunk);
+      }
+    }
+
+    // A trailing chunk with nothing after it to absorb into gets folded
+    // backward instead, keeping the earlier (more substantial) heading.
+    if (merged.length > 1) {
+      const last = merged[merged.length - 1];
+      if (this.estimateTokens(last.text) < minTokens) {
+        const prev = merged[merged.length - 2];
+        merged[merged.length - 2] = {
+          text: `${prev.text}\n\n${last.text}`,
+          metadata: prev.metadata,
+        };
+        merged.pop();
+      }
+    }
+
+    return merged;
   }
 
   /**

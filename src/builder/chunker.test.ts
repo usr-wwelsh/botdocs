@@ -16,7 +16,10 @@ function makeDoc(content: string): ProcessedDocument {
 
 test('splits a document into one chunk per heading', () => {
   const chunker = new Chunker();
-  const doc = makeDoc('# Intro\nHello there.\n\n## Setup\nInstall the thing.\n');
+  const doc = makeDoc(
+    '# Intro\nHello there, welcome to the guide. This section introduces the basic concepts you need before continuing.\n\n' +
+      '## Setup\nInstall the thing using the installer script bundled in the repository root directory.\n'
+  );
 
   const chunks = chunker.chunkDocument(doc);
 
@@ -61,6 +64,45 @@ test('splits an oversized section into multiple overlapping chunks', () => {
   for (const chunk of chunks) {
     assert.equal(chunk.metadata.heading, 'Big Section');
   }
+});
+
+test('merges a tiny heading-only chunk into the following section instead of keeping it standalone', () => {
+  const chunker = new Chunker({ minChunkSize: 10 });
+  const doc = makeDoc(
+    '# Intro\nHi.\n\n## Setup\nInstall the thing using the installer script bundled in the repository root directory.\n'
+  );
+
+  const chunks = chunker.chunkDocument(doc);
+
+  assert.equal(chunks.length, 1);
+  assert.equal(chunks[0].metadata.heading, 'Setup');
+  assert.match(chunks[0].text, /Hi\./);
+  assert.match(chunks[0].text, /Install the thing/);
+});
+
+test('folds a trailing tiny section backward when nothing follows it to absorb into', () => {
+  const chunker = new Chunker({ minChunkSize: 10 });
+  const doc = makeDoc(
+    '# Guide\nInstall the thing using the installer script bundled in the repository root directory.\n\n## See also\nMore.\n'
+  );
+
+  const chunks = chunker.chunkDocument(doc);
+
+  assert.equal(chunks.length, 1);
+  assert.equal(chunks[0].metadata.heading, 'Guide');
+  assert.match(chunks[0].text, /Install the thing/);
+  assert.match(chunks[0].text, /More\./);
+});
+
+test('leaves normally-sized chunks alone', () => {
+  const chunker = new Chunker({ minChunkSize: 10 });
+  const doc = makeDoc(
+    '# Intro\nHello there, welcome to the guide and thanks for stopping by.\n\n## Setup\nInstall the thing using the installer script.\n'
+  );
+
+  const chunks = chunker.chunkDocument(doc);
+
+  assert.equal(chunks.length, 2);
 });
 
 test('drops chunks that are empty after trimming', () => {
