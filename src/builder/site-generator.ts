@@ -124,6 +124,10 @@ export class SiteGenerator {
         content,
         navigation: this.renderNavigation(navigation, doc.url),
         chatEnabled: config.chat?.enabled,
+        searchConfigJson: JSON.stringify({
+          topK: config.build?.topK ?? 3,
+          minScore: config.build?.minScore ?? 0.5,
+        }),
         attribution: config.attribution !== false, // defaults to true
       });
 

@@ -69,7 +69,9 @@ file can be placed in the input directory to configure the build:
   "build": {
     "chunkSize": 500,
     "chunkOverlap": 50,
-    "topK": 3
+    "minChunkSize": 15,
+    "topK": 3,
+    "minScore": 0.5
   }
 }
 .fi
@@ -86,6 +88,24 @@ same-specificity selectors override the theme without
 .B attribution
 controls the "Built with Botdocs" footer link and defaults to
 .BR true .
+.PP
+.B build.minChunkSize
+folds chunks smaller than this many estimated tokens into a neighboring
+chunk instead of keeping them as standalone, low-signal retrieval
+candidates (e.g. a heading followed by a single short line). Defaults to
+.BR 15 .
+.PP
+.B build.minScore
+is the minimum cosine similarity (0-1) a chunk must reach to be returned
+from search at all, regardless of
+.BR topK .
+Chat search combines vector similarity with BM25 keyword matching
+(Reciprocal Rank Fusion); this threshold is applied to the raw vector
+score so an off-topic query returns fewer or no results instead of always
+padding out to
+.BR topK .
+Defaults to
+.BR 0.5 .
 .SH EXAMPLES
 Build a documentation site from a directory:
 .PP

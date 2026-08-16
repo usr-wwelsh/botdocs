@@ -72,6 +72,7 @@ export async function build(options: BuildOptions): Promise<void> {
     const vectorDBBuilder = new VectorDBBuilder({
       chunkSize: config.build?.chunkSize,
       chunkOverlap: config.build?.chunkOverlap,
+      minChunkSize: config.build?.minChunkSize,
     });
 
     await vectorDBBuilder.build(documents, outputDir, verbose);

@@ -79,7 +79,9 @@ Create `botdocs.config.json` in your docs directory:
   "build": {
     "chunkSize": 500,
     "chunkOverlap": 50,
-    "topK": 3
+    "minChunkSize": 15,
+    "topK": 3,
+    "minScore": 0.5
   }
 }
 ```
@@ -97,7 +99,9 @@ Create `botdocs.config.json` in your docs directory:
 | `chat.welcomeMessage` | string | `"Ask me anything about the docs!"` | Chatbot welcome message |
 | `build.chunkSize` | number | `500` | Text chunk size for embeddings |
 | `build.chunkOverlap` | number | `50` | Overlap between chunks |
+| `build.minChunkSize` | number | `15` | Chunks smaller than this (estimated tokens) get folded into a neighboring chunk instead of becoming a standalone, low-signal search result |
 | `build.topK` | number | `3` | Number of results to return |
+| `build.minScore` | number | `0.5` | Minimum vector similarity (0-1) a result must reach to be returned at all, regardless of `topK` — filters out weak/off-topic matches instead of always padding results |
 
 ## Front Matter
 
@@ -120,7 +124,7 @@ description: Quick start guide
 ## Architecture
 
 - **Embedding Model**: `e5-small-v2` (384-dim vectors, 2.2x faster than all-MiniLM-L6-v2)
-- **Search**: Cosine similarity, client-side only
+- **Search**: Hybrid — vector cosine similarity fused with BM25 keyword scoring (Reciprocal Rank Fusion), gated by a minimum similarity threshold, client-side only
 - **Browser Bundle**: ~825KB (includes Transformers.js)
 - **Deployment**: Fully static, works on any host
 

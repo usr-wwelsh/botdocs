@@ -5,6 +5,12 @@
 import { renderMarkdown } from '../utils/markdown-renderer.js';
 import { ESTIMATED_MODEL_SIZE_MB } from './embedder.js';
 
+declare global {
+  interface Window {
+    __BOTDOCS_SEARCH_CONFIG__?: { topK?: number; minScore?: number };
+  }
+}
+
 export interface Message {
   role: 'user' | 'assistant';
   content: string;
@@ -235,7 +241,11 @@ async function loadModel(statusEl: HTMLElement, fromCache: boolean): Promise<voi
     statusEl.style.display = 'block';
     statusEl.textContent = fromCache ? 'Loading cached model...' : 'Downloading model...';
 
-    const { initializeRAG, isRAGReady } = await import('./rag-engine.js');
+    const { initializeRAG, isRAGReady, setTopK, setMinScore } = await import('./rag-engine.js');
+
+    const searchConfig = window.__BOTDOCS_SEARCH_CONFIG__;
+    if (searchConfig?.topK !== undefined) setTopK(searchConfig.topK);
+    if (searchConfig?.minScore !== undefined) setMinScore(searchConfig.minScore);
 
     await initializeRAG((progress) => {
       statusEl.innerHTML = `

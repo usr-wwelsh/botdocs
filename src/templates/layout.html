@@ -68,6 +68,9 @@
     {{/if}}
   </div>
 
+  {{#if chatEnabled}}
+  <script>window.__BOTDOCS_SEARCH_CONFIG__ = {{searchConfigJson}};</script>
+  {{/if}}
   <script type="module" src="/assets/js/bundle.js"></script>
 </body>
 </html>

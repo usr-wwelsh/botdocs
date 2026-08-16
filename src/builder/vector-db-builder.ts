@@ -9,6 +9,7 @@ import { createHash } from 'crypto';
 export interface VectorDBBuilderOptions {
   chunkSize?: number;
   chunkOverlap?: number;
+  minChunkSize?: number;
   modelName?: string;
 }
 
@@ -20,6 +21,7 @@ export class VectorDBBuilder {
     this.chunker = new Chunker({
       maxChunkSize: options.chunkSize || 500,
       chunkOverlap: options.chunkOverlap || 50,
+      minChunkSize: options.minChunkSize,
     });
 
     this.embedder = new Embedder(options.modelName);
