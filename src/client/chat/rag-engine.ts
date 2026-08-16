@@ -15,6 +15,7 @@ export interface RAGResponse {
 
 let isInitialized = false;
 let topK = 5;
+let minScore = 0.5;
 
 const HIGHLY_RELEVANT_SCORE = 0.7;
 
@@ -59,22 +60,24 @@ export async function initializeRAG(
  */
 export async function queryRAG(
   query: string,
-  options: { topK?: number } = {}
+  options: { topK?: number; minScore?: number } = {}
 ): Promise<RAGResponse> {
   if (!isInitialized) {
     throw new Error('Search system not initialized');
   }
 
-  const k = options.topK || topK;
+  const k = options.topK ?? topK;
+  const threshold = options.minScore ?? minScore;
 
   try {
     // Step 1: Embed the query
     const embedder = getEmbedder();
     const queryEmbedding = await embedder.embed(query);
 
-    // Step 2: Search for relevant chunks
+    // Step 2: Search for relevant chunks (hybrid vector + keyword, gated on
+    // a minimum similarity score so weak/off-topic matches don't pad topK)
     const vectorSearch = getVectorSearch();
-    const searchResults = await vectorSearch.search(queryEmbedding, k);
+    const searchResults = await vectorSearch.search(queryEmbedding, query, k, threshold);
 
     // Step 3: Re-rank sentences/segments within the top chunks against the
     // query so snippets are extracted, not char-sliced.
@@ -222,4 +225,12 @@ export function isRAGReady(): boolean {
  */
 export function setTopK(k: number): void {
   topK = k;
+}
+
+/**
+ * Set the minimum cosine similarity a chunk must reach to be returned at
+ * all, regardless of topK.
+ */
+export function setMinScore(score: number): void {
+  minScore = score;
 }
