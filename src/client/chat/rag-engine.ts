@@ -6,18 +6,26 @@
 import { getEmbedder } from './embedder.js';
 import { getVectorSearch, SearchResult } from './vector-search.js';
 import { extractSnippet, SnippetExtraction } from './sentence-extractor.js';
+import { stripInlineLinks } from '../utils/markdown-links.js';
 import { ChunkMetadata } from '../../types/vector-db.js';
 
+export interface RAGMessage {
+  content: string;
+  citations?: Array<{ title: string; url: string }>;
+}
+
 export interface RAGResponse {
-  answer: string;
-  sources: Array<{ title: string; url: string }>;
+  messages: RAGMessage[];
 }
 
 let isInitialized = false;
 let topK = 5;
-let minScore = 0.5;
+let minScore = 0.75;
 
-const HIGHLY_RELEVANT_SCORE = 0.7;
+// Must stay above the default minScore, or every result that clears the
+// relevance floor would also count as "highly relevant," making the label
+// meaningless.
+const HIGHLY_RELEVANT_SCORE = 0.85;
 
 /**
  * Check whether the embedding model is already cached in the browser
@@ -90,24 +98,10 @@ export async function queryRAG(
       )
     );
 
-    // Step 4: Format results as a conversational response
-    const answer = formatSearchResults(query, searchResults, topResults, extracted);
+    // Step 4: Format results as a series of separate, conversational bubbles
+    const messages = buildResponseMessages(query, searchResults, topResults, extracted);
 
-    // Step 5: Extract sources with deep links
-    const sources = searchResults.map((result) => ({
-      title: sourceLabel(result.chunk.metadata),
-      url: buildLink(result.chunk.metadata),
-    }));
-
-    // Remove duplicates from sources
-    const uniqueSources = Array.from(
-      new Map(sources.map((s) => [s.url, s])).values()
-    );
-
-    return {
-      answer,
-      sources: uniqueSources,
-    };
+    return { messages };
   } catch (error) {
     console.error('Search query error:', error);
     throw error;
@@ -127,23 +121,31 @@ function sourceLabel(metadata: ChunkMetadata): string {
 }
 
 /**
- * Format search results as a conversational response
+ * Build a series of separate, conversational chat bubbles from search
+ * results — one bubble per idea (quick answer, intro, each section, the
+ * "more results" note) rather than one long message, so multiple answers
+ * don't run together.
  */
-function formatSearchResults(
+function buildResponseMessages(
   query: string,
   allResults: SearchResult[],
   topResults: SearchResult[],
   extracted: SnippetExtraction[]
-): string {
+): RAGMessage[] {
   if (allResults.length === 0) {
-    return "I couldn't find anything about that in the documentation. Try rephrasing your question or browse the navigation menu to explore available topics.";
+    return [
+      {
+        content:
+          "I couldn't find anything about that in the documentation. Try rephrasing your question or browse the navigation menu to explore available topics.",
+      },
+    ];
   }
 
   const isHowTo = /^how (to|do|can)/i.test(query);
   const isWhat = /^what (is|are)/i.test(query);
   const isWhy = /^why/i.test(query);
 
-  let response = '';
+  const messages: RAGMessage[] = [];
 
   // Quick answer: when multiple sources strongly agree, lead with the
   // single best-matching sentence from each — a synthesized, extractive
@@ -156,61 +158,77 @@ function formatSearchResults(
     );
 
   if (quickAnswerItems.length > 1) {
-    response += '**Quick answer:**\n\n';
+    let quickAnswer = '**Quick answer**\n\n';
     for (const { result, extract } of quickAnswerItems) {
       const link = buildLink(result.chunk.metadata);
-      response += `- ${extract.topSegment} ([${sourceLabel(result.chunk.metadata)}](${link}))\n`;
+      // The extracted sentence is pulled verbatim from doc prose, which may
+      // itself contain a markdown link or badge image — strip that before
+      // nesting it inside the citation link this bullet already wraps it
+      // in, or the two links garble each other when rendered.
+      const segment = stripInlineLinks(extract.topSegment);
+      quickAnswer += `- ${segment} ([${sourceLabel(result.chunk.metadata)}](${link}))\n`;
     }
-    response += '\n---\n\n';
+    messages.push({ content: quickAnswer.trim() });
   }
 
-  // Add contextual intro
+  // Contextual intro, its own bubble
+  let intro: string;
   if (isHowTo) {
-    response += "Here's how you can do that:\n\n";
+    intro = "Here's how you can do that:";
   } else if (isWhat) {
-    response += "Let me explain:\n\n";
+    intro = 'Let me explain:';
   } else if (isWhy) {
-    response += "Here's what the docs say about that:\n\n";
+    intro = "Here's what the docs say about that:";
   } else if (allResults.length === 1) {
-    response += "I found this relevant section:\n\n";
+    intro = 'I found this relevant section:';
   } else {
-    response += `I found ${topResults.length} relevant sections:\n\n`;
+    intro = `I found ${topResults.length} relevant sections:`;
   }
+  messages.push({ content: intro });
 
-  // Format each result beautifully
+  // One bubble per result
   topResults.forEach((result, index) => {
     const { chunk, score } = result;
     const heading = chunk.metadata.heading || chunk.metadata.title;
     const link = buildLink(chunk.metadata);
     const snippet = extracted[index].snippet;
 
-    // Add visual separation between results
-    if (index > 0) {
-      response += '\n\n---\n\n';
-    }
-
-    // Format with heading, extracted snippet, and link
-    response += `**${heading}**\n\n`;
-    response += snippet;
-    response += `\n\n→ [View full section](${link})`;
+    let content = `### ${heading}\n\n${snippet}\n\n→ [View full section](${link})`;
 
     // Add relevance indicator for highly relevant matches
     if (score > HIGHLY_RELEVANT_SCORE) {
-      response += ' *(highly relevant)*';
+      content += ' *(highly relevant)*';
     }
+
+    // Fold the single-result follow-up nudge into that same bubble rather
+    // than spawning a bubble for one line of flourish text.
+    if (allResults.length === 1) {
+      content += '\n\n*Have a follow-up question? Just ask!*';
+    }
+
+    messages.push({ content });
   });
 
-  // Add helpful footer
+  // Note about additional results as its own bubble
   if (allResults.length > 3) {
     const moreCount = allResults.length - 3;
-    response += `\n\n---\n\n💡 **Found ${moreCount} more related section${
-      moreCount > 1 ? 's' : ''
-    }** — check the sources below for more details.`;
-  } else if (allResults.length === 1) {
-    response += '\n\n*Have a follow-up question? Just ask!*';
+    messages.push({
+      content: `💡 **Found ${moreCount} more related section${
+        moreCount > 1 ? 's' : ''
+      }** — check the sources below for more details.`,
+    });
   }
 
-  return response;
+  // Deduped citations attach to the final bubble only, so the source list
+  // shows once instead of repeating across every bubble.
+  const sources = allResults.map((result) => ({
+    title: sourceLabel(result.chunk.metadata),
+    url: buildLink(result.chunk.metadata),
+  }));
+  const uniqueSources = Array.from(new Map(sources.map((s) => [s.url, s])).values());
+  messages[messages.length - 1].citations = uniqueSources;
+
+  return messages;
 }
 
 /**

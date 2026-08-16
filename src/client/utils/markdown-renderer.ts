@@ -37,6 +37,18 @@ export function renderMarkdown(text: string): string {
   // Horizontal rules (---)
   html = html.replace(/^---$/gm, '<hr />');
 
+  // Unordered lists: fold each run of consecutive "- " lines into one
+  // <ul>, so multiple bullet points read as a group instead of a wall
+  // of dash-prefixed lines.
+  html = html.replace(/(?:^- .+\n?)+\n*/gm, (block) => {
+    const items = block
+      .trim()
+      .split('\n')
+      .map((line) => `<li>${line.replace(/^- /, '')}</li>`)
+      .join('');
+    return `<ul>${items}</ul>\n\n`;
+  });
+
   // Line breaks
   html = html.replace(/\n\n/g, '</p><p>');
   html = html.replace(/\n/g, '<br />');
@@ -44,19 +56,19 @@ export function renderMarkdown(text: string): string {
   // Wrap in paragraphs
   html = `<p>${html}</p>`;
 
-  // Clean up empty paragraphs and fix pre/code paragraph wrapping
+  // Clean up empty paragraphs and fix block-element paragraph wrapping
   html = html.replace(/<p><\/p>/g, '');
   html = html.replace(/<p>(<pre>)/g, '$1');
   html = html.replace(/(<\/pre>)<\/p>/g, '$1');
   html = html.replace(/<p>(<h[1-3]>)/g, '$1');
   html = html.replace(/(<\/h[1-3]>)<\/p>/g, '$1');
   html = html.replace(/<p>(<hr \/>)<\/p>/g, '$1');
+  html = html.replace(/<p>(<ul>)/g, '$1');
+  html = html.replace(/(<\/ul>)<\/p>/g, '$1');
 
   return html;
 }
 
 function escapeHtml(text: string): string {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }

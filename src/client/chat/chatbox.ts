@@ -316,12 +316,14 @@ async function handleSendMessage(input: HTMLTextAreaElement): Promise<void> {
     // Remove loading indicator
     hideLoading();
 
-    // Add assistant message
-    addMessage({
-      role: 'assistant',
-      content: response.answer,
-      citations: response.sources,
-    });
+    // Add each part of the response as its own bubble
+    for (const message of response.messages) {
+      addMessage({
+        role: 'assistant',
+        content: message.content,
+        citations: message.citations,
+      });
+    }
   } catch (error) {
     console.error('Chat error:', error);
     hideLoading();
