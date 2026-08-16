@@ -6,6 +6,10 @@ export interface TextChunk {
   metadata: ChunkMetadata;
 }
 
+// Matches a markdown image, a badge (image wrapped in a link), or a plain
+// link, e.g. `![alt](url)`, `[![alt](url)](url)`, `[text](url)`.
+const LINK_OR_IMAGE = /\[!\[[^\]]*\]\([^)]*\)\]\([^)]*\)|!?\[[^\]]*\]\([^)]*\)/g;
+
 export interface ChunkerOptions {
   maxChunkSize: number;
   chunkOverlap: number;
@@ -85,6 +89,13 @@ export class Chunker {
         currentHeading = headingMatch[2];
         currentChunk = [line];
       } else {
+        // Badges and bare reference links carry no retrievable prose, but
+        // their markup is character-heavy enough to dodge minChunkSize and
+        // their repeated project-name alt-text then dominates BM25 matches
+        // on any query mentioning that name. Drop them before they're ever
+        // embedded or indexed rather than filtering by size after the fact.
+        if (this.isBoilerplateLine(line)) continue;
+
         currentChunk.push(line);
 
         // Check if chunk is getting too large
@@ -155,6 +166,16 @@ export class Chunker {
     }
 
     return merged;
+  }
+
+  /**
+   * True for a line that is entirely markdown badges/images/links with no
+   * other prose (a bare link line, a shields.io badge, or a chain of both).
+   */
+  private isBoilerplateLine(line: string): boolean {
+    const trimmed = line.trim();
+    if (!trimmed) return false;
+    return trimmed.replace(LINK_OR_IMAGE, '').trim().length === 0;
   }
 
   /**

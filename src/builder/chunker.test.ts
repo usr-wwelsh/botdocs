@@ -105,6 +105,38 @@ test('leaves normally-sized chunks alone', () => {
   assert.equal(chunks.length, 2);
 });
 
+test('strips markdown badge and bare-link-only lines from chunk text', () => {
+  const chunker = new Chunker();
+  const doc = makeDoc(
+    '# Intro\n[View on GitHub](https://github.com/example/repo)\n\n' +
+      '[![npm version](https://img.shields.io/npm/v/example)](https://npmjs.com/package/example)\n\n' +
+      'Hello there, welcome to the guide and thanks for stopping by.\n'
+  );
+
+  const chunks = chunker.chunkDocument(doc);
+
+  assert.equal(chunks.length, 1);
+  assert.doesNotMatch(chunks[0].text, /View on GitHub/);
+  assert.doesNotMatch(chunks[0].text, /shields\.io/);
+  assert.match(chunks[0].text, /Hello there/);
+});
+
+test('folds a badge-only title section into the following content instead of standing alone', () => {
+  const chunker = new Chunker({ minChunkSize: 10 });
+  const doc = makeDoc(
+    '# Botdocs\n[View on GitHub](https://github.com/usr-wwelsh/botdocs)\n\n' +
+      '[![npm version](https://img.shields.io/npm/v/botdocs)](https://npmjs.com/package/botdocs)\n\n' +
+      '## Available Themes\n- classic - Clean, professional theme (default)\n- material - Material Design theme\n'
+  );
+
+  const chunks = chunker.chunkDocument(doc);
+
+  assert.equal(chunks.length, 1);
+  assert.equal(chunks[0].metadata.heading, 'Available Themes');
+  assert.doesNotMatch(chunks[0].text, /shields\.io/);
+  assert.match(chunks[0].text, /classic/);
+});
+
 test('drops chunks that are empty after trimming', () => {
   const chunker = new Chunker();
   const doc = makeDoc('# Intro\n\n\n## Setup\nInstall the thing.\n');
