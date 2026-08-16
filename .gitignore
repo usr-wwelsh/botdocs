@@ -24,7 +24,6 @@ Thumbs.db
 *.tsbuildinfo
 
 # Test/example documentation folders
-test-docs/
 docs/
 my-docs/
 example-docs/
