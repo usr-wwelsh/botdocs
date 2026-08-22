@@ -6,6 +6,7 @@ export interface BotdocsConfig {
   theme?: Theme;
   customCss?: string;
   attribution?: boolean;
+  baseUrl?: string;
   chat?: {
     enabled?: boolean;
     welcomeMessage?: string;

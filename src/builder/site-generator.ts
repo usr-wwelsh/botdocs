@@ -1,5 +1,5 @@
 import { readFileSync, writeFileSync, readdirSync, mkdirSync, cpSync } from 'fs';
-import { join, dirname, relative, resolve, basename } from 'path';
+import { join, dirname, basename } from 'path';
 import { MarkdownProcessor } from './markdown-processor.js';
 import { TemplateEngine } from './template-engine.js';
 import { ProcessedDocument, NavigationItem } from '../types/document.js';
@@ -12,6 +12,10 @@ const __dirname = dirname(__filename);
 
 function stripHtml(value: string): string {
   return value.replace(/<[^>]*>/g, '');
+}
+
+export function absoluteUrl(baseUrl: string, urlPath: string): string {
+  return `${baseUrl.replace(/\/+$/, '')}${urlPath.startsWith('/') ? urlPath : `/${urlPath}`}`;
 }
 
 export class SiteGenerator {
@@ -90,6 +94,7 @@ export class SiteGenerator {
     for (let i = 0; i < this.documents.length; i++) {
       const doc = this.documents[i];
       const isIndex = doc.relativePath === 'README.md' || doc.relativePath === 'index.md';
+      const pageUrl = isIndex ? '/' : doc.url;
 
       // Prepare navigation data
       const adjacent = pageSequence.get(doc.url);
@@ -125,6 +130,7 @@ export class SiteGenerator {
         content,
         navigation: this.renderNavigation(navigation, doc.url),
         chatEnabled: config.chat?.enabled,
+        ogUrl: config.baseUrl ? absoluteUrl(config.baseUrl, pageUrl) : undefined,
         searchConfigJson: JSON.stringify({
           topK: config.build?.topK ?? 3,
           minScore: config.build?.minScore ?? 0.75,
@@ -158,7 +164,24 @@ export class SiteGenerator {
 
     console.log(`Generated ${this.documents.length} HTML pages`);
 
+    if (config.baseUrl) {
+      this.writeSitemap(outputDir, config.baseUrl);
+    }
+
     return this.documents;
+  }
+
+  private writeSitemap(outputDir: string, baseUrl: string): void {
+    const urls = this.documents
+      .map((doc) => {
+        const isRootIndex =
+          doc.relativePath === 'README.md' || doc.relativePath === 'index.md';
+        return absoluteUrl(baseUrl, isRootIndex ? '/' : doc.url);
+      })      .map((loc) => `  <url><loc>${loc}</loc></url>`)
+      .join('\n');
+    const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`;
+    writeFileSync(join(outputDir, 'sitemap.xml'), sitemap, 'utf-8');
+    console.log('Generated sitemap.xml');
   }
 
   /**
