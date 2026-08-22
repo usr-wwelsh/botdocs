@@ -1,11 +1,13 @@
 import { BuildOptions, BotdocsConfig, defaultConfig } from '../types/config.js';
 import { SiteGenerator } from './site-generator.js';
 import { VectorDBBuilder } from './vector-db-builder.js';
-import { existsSync, readFileSync, writeFileSync, copyFileSync, mkdirSync, cpSync } from 'fs';
+import { formatBytes, isIndexSizeWarning } from './index-size.js';
+import { existsSync, readFileSync, writeFileSync, copyFileSync, mkdirSync, cpSync, statSync } from 'fs';
 import { join, dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { INDEX_SIZE_WARN_BYTES } from './index-size.js';
 import { underSrc } from './paths.js';
 
 const execAsync = promisify(exec);
@@ -77,6 +79,19 @@ export async function build(options: BuildOptions): Promise<void> {
     });
 
     await vectorDBBuilder.build(documents, outputDir, verbose);
+
+    const dbPath = join(outputDir, 'vector-db.json');
+    if (existsSync(dbPath)) {
+      const { size } = statSync(dbPath);
+      console.log(`Search index: ${formatBytes(size)}`);
+      if (isIndexSizeWarning(size)) {
+        console.warn(
+          `Warning: search index exceeds ${formatBytes(INDEX_SIZE_WARN_BYTES)} — ` +
+            'it loads fully in the browser, so large indexes slow first paint. ' +
+            'Consider fewer/smaller docs or raising build.minChunkSize.'
+        );
+      }
+    }
   }
 
   // Phase 3: Build client-side code with Vite
