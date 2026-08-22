@@ -1,6 +1,8 @@
 import { Command } from 'commander';
 import { build } from '../builder/index.js';
 import { CliOptions, defaultOptions } from './options.js';
+import { startServer } from './server.js';
+import { watchDocs } from './watcher.js';
 import { readFileSync, existsSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -34,12 +36,26 @@ program
   .option('-c, --config <file>', 'Path to config file (botdocs.config.json)')
   .option('-t, --theme <theme>', 'Theme to use (classic, material, minimal, slate, modern); overrides config file if set')
   .option('-v, --verbose', 'Enable verbose logging')
+  .option('-w, --watch', 'Rebuild on changes and serve the site for live preview')
+  .option('-p, --port <number>', 'Port for the preview server (with --watch)', parseInt)
   .action(async (input: string, options: CliOptions) => {
-    try {
-      const inputDir = resolve(process.cwd(), input);
-      const outputDir = resolve(process.cwd(), options.output || defaultOptions.output!);
+    const inputDir = resolve(process.cwd(), input);
+    const outputDir = resolve(process.cwd(), options.output || defaultOptions.output!);
+    const verbose = options.verbose || false;
 
-      if (options.verbose) {
+    const runBuild = async () => {
+      await build({
+        inputDir,
+        outputDir,
+        chatEnabled: !options.noChat,
+        configPath: options.config,
+        verbose,
+        theme: options.theme,
+      });
+    };
+
+    try {
+      if (verbose) {
         console.log('Botdocs starting...');
         console.log(`Input: ${inputDir}`);
         console.log(`Output: ${outputDir}`);
@@ -47,17 +63,35 @@ program
         console.log(`Theme override: ${options.theme || '(none — using config file or default)'}`);
       }
 
-      await build({
-        inputDir,
-        outputDir,
-        chatEnabled: !options.noChat,
-        configPath: options.config,
-        verbose: options.verbose || false,
-        theme: options.theme,
-      });
+      await runBuild();
 
-      console.log('Build complete!');
-      console.log(`Site generated at: ${outputDir}`);
+      if (options.watch) {
+        const server = await startServer(outputDir, options.port ?? defaultOptions.port!);
+        console.log(`Site generated at: ${outputDir}`);
+        console.log(`Preview at: ${server.url}`);
+        console.log('Watching for changes... Press Ctrl+C to stop.');
+
+        const watcher = watchDocs(inputDir, (changes) => {
+          const names = [...new Set(changes.map((c) => c.path.split('/').pop()))].join(', ');
+          console.log(`Changed: ${names} — rebuilding...`);
+          runBuild().catch((error) => {
+            console.error('Rebuild failed:', error);
+          });
+        });
+
+        let shuttingDown = false;
+        const shutdown = () => {
+          if (shuttingDown) return;
+          shuttingDown = true;
+          watcher.close();
+          server.close().finally(() => process.exit(0));
+        };
+        process.on('SIGINT', shutdown);
+        process.on('SIGTERM', shutdown);
+      } else {
+        console.log('Build complete!');
+        console.log(`Site generated at: ${outputDir}`);
+      }
     } catch (error) {
       console.error('Build failed:', error);
       process.exit(1);

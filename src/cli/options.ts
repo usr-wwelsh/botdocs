@@ -6,10 +6,14 @@ export interface CliOptions {
   config?: string;
   verbose?: boolean;
   theme?: Theme;
+  watch?: boolean;
+  port?: number;
 }
 
 export const defaultOptions: Partial<CliOptions> = {
   output: 'output',
   noChat: false,
   verbose: false,
+  watch: false,
+  port: 3000,
 };
