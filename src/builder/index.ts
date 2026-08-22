@@ -6,6 +6,7 @@ import { join, dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { underSrc } from './paths.js';
 
 const execAsync = promisify(exec);
 
@@ -138,8 +139,7 @@ export async function build(options: BuildOptions): Promise<void> {
 
   // Phase 4: Copy styles
   console.log('Copying styles...');
-  // From dist/src/builder, go to project root, then to src/styles
-  const stylesDir = resolve(__dirname, '../../../src/styles');
+  const stylesDir = underSrc(__dirname, 'styles');
   const themesDir = join(stylesDir, 'themes');
   const outputCssDir = join(assetsDir, 'css');
 

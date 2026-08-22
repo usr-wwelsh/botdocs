@@ -4,6 +4,7 @@ import { MarkdownProcessor } from './markdown-processor.js';
 import { TemplateEngine } from './template-engine.js';
 import { ProcessedDocument, NavigationItem } from '../types/document.js';
 import { BotdocsConfig } from '../types/config.js';
+import { underSrc } from './paths.js';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -67,9 +68,9 @@ export class SiteGenerator {
     const navigation = this.buildNavigation(this.documents);
     const pageSequence = this.buildPageSequence(navigation);
 
-    // Load templates from source directory (not dist)
-    // From dist/src/builder, go to project root, then to src/templates
-    const templatesDir = resolve(__dirname, '../../../src/templates');
+    // Load templates from the project's src/templates, whether running
+    // compiled from dist/ or directly from src/ via tsx.
+    const templatesDir = underSrc(__dirname, 'templates');
     const layoutTemplate = readFileSync(
       join(templatesDir, 'layout.html'),
       'utf-8'

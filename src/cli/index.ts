@@ -1,18 +1,26 @@
 import { Command } from 'commander';
 import { build } from '../builder/index.js';
 import { CliOptions, defaultOptions } from './options.js';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Read package.json for version
-// From dist/src/cli/index.js, go up 3 levels to project root
-const packageJson = JSON.parse(
-  readFileSync(resolve(__dirname, '../../../package.json'), 'utf-8')
-);
+// Read package.json for version. Walks up from this file so it resolves
+// both from dist/src/cli (installed) and src/cli (tsx).
+function findPackageJson(startDir: string): string {
+  let dir = startDir;
+  while (dir !== dirname(dir)) {
+    const candidate = resolve(dir, 'package.json');
+    if (existsSync(candidate)) return candidate;
+    dir = dirname(dir);
+  }
+  throw new Error('package.json not found');
+}
+
+const packageJson = JSON.parse(readFileSync(findPackageJson(__dirname), 'utf-8'));
 
 const program = new Command();
 
