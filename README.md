@@ -14,6 +14,8 @@ Convert markdown documentation into beautiful static sites with AI-powered seman
 - **Deep Links** - Search results link directly to sections
 - **No Backend** - Everything runs in the browser
 - **Fast** - Syntax highlighting with Shiki
+- **Live Preview** - `--watch` rebuilds on save and serves the site locally
+- **SEO** - Optional Open Graph/Twitter tags and `sitemap.xml` via `baseUrl`
 
 ## Installation
 
@@ -46,6 +48,9 @@ botdocs ./docs -c ./my-config.json
 
 # Combine multiple options
 botdocs ./docs -o ./public -t slate -v
+
+# Live preview: rebuild on save + local server
+botdocs ./docs --watch
 ```
 
 ### CLI Options
@@ -57,6 +62,8 @@ botdocs ./docs -o ./public -t slate -v
 | `--config <file>` | `-c` | Path to config file | `botdocs.config.json` |
 | `--theme <theme>` | `-t` | Theme to use | `classic` |
 | `--verbose` | `-v` | Enable verbose logging | `false` |
+| `--watch` | `-w` | Rebuild on changes and serve the site for live preview | `false` |
+| `--port <number>` | `-p` | Port for the preview server (with `--watch`) | `3000` |
 
 ### Available Themes
 
@@ -77,6 +84,7 @@ Create `botdocs.config.json` in your docs directory:
   "theme": "classic",
   "customCss": "custom.css",
   "attribution": true,
+  "baseUrl": "https://example.com/docs/",
   "chat": { "enabled": true },
   "build": {
     "chunkSize": 500,
@@ -97,6 +105,7 @@ Create `botdocs.config.json` in your docs directory:
 | `theme` | string | `"classic"` | Theme to use (classic, material, minimal, slate, modern) |
 | `customCss` | string | none | Path to a CSS file, resolved relative to the config file's directory. Appended after theme CSS in `bundle.css`, so same-specificity selectors override the theme without `!important` |
 | `attribution` | boolean | `true` | Show "Built with Botdocs" footer link |
+| `baseUrl` | string | none | Canonical URL where the site is hosted. When set, pages get `rel=canonical` and Open Graph/Twitter card tags, and a `sitemap.xml` is generated |
 | `chat.enabled` | boolean | `true` | Enable AI chatbot |
 | `chat.welcomeMessage` | string | `"Ask me anything about the docs!"` | Chatbot welcome message |
 | `build.chunkSize` | number | `500` | Text chunk size for embeddings |

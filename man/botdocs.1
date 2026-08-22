@@ -44,6 +44,16 @@ Theme to use for the generated site. Available themes:
 .BR \-v ", " \-\-verbose
 Enable verbose logging during the build process.
 .TP
+.BR \-w ", " \-\-watch
+Rebuild when markdown or config files change, and serve the generated site
+on a local preview server for live editing. Press Ctrl+C to stop.
+.TP
+.BR \-p ", " \-\-port " " \fInumber\fR
+Port for the
+.B \-\-watch
+preview server. Defaults to
+.BR 3000 .
+.TP
 .BR \-V ", " \-\-version
 Output the version number.
 .TP
@@ -62,6 +72,7 @@ file can be placed in the input directory to configure the build:
   "theme": "classic",
   "customCss": "custom.css",
   "attribution": true,
+  "baseUrl": "https://example.com/docs/",
   "chat": {
     "enabled": true,
     "welcomeMessage": "Ask me anything about the docs!"
@@ -88,6 +99,15 @@ same-specificity selectors override the theme without
 .B attribution
 controls the "Built with Botdocs" footer link and defaults to
 .BR true .
+.PP
+.B baseUrl
+is the canonical URL where the site is hosted (e.g. a GitHub Pages URL).
+When set, each page emits
+.B rel=canonical
+and Open Graph/Twitter card metadata, and a
+.B sitemap.xml
+listing every generated page is written to the output directory.
+When unset, these tags are omitted and no sitemap is generated.
 .PP
 .B build.minChunkSize
 folds chunks smaller than this many estimated tokens into a neighboring
@@ -138,6 +158,14 @@ Use the material theme:
 .RS 4
 .nf
 botdocs ./docs -t material
+.fi
+.RE
+.PP
+Edit docs with live preview (rebuild on save, serve on port 4000):
+.PP
+.RS 4
+.nf
+botdocs ./docs -w -p 4000
 .fi
 .RE
 .SH EXIT STATUS
