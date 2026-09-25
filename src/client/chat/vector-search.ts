@@ -8,6 +8,7 @@
 import { DocumentChunk, VectorDatabase } from '../../types/vector-db.js';
 import { cosineSimilarity } from '../utils/similarity.js';
 import { BM25Index } from '../utils/bm25.js';
+import { fromSiteRoot } from '../utils/site-root.js';
 
 export interface SearchResult {
   chunk: DocumentChunk;
@@ -51,7 +52,7 @@ export class VectorSearch {
 
     try {
       console.log('Loading vector database...');
-      const response = await fetch('/vector-db.json');
+      const response = await fetch(fromSiteRoot('/vector-db.json'));
       this.setDatabase((await response.json()) as VectorDatabase);
       console.log(`Loaded ${this.vectorDB!.chunks.length} chunks`);
     } finally {

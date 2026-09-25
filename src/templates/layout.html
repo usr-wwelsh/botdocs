@@ -13,6 +13,7 @@
   <link rel="canonical" href="{{ogUrl}}">
   {{/if}}
   <meta name="twitter:card" content="summary">
+  <meta name="botdocs-root" content="{{root}}">
   <script>
     // Apply theme immediately to prevent flash
     (function() {
@@ -22,7 +23,7 @@
       document.documentElement.setAttribute('data-theme', theme);
     })();
   </script>
-  <link rel="stylesheet" href="/assets/css/bundle.css">
+  <link rel="stylesheet" href="{{root}}assets/css/bundle.css">
 </head>
 <body>
   <div class="layout">
@@ -79,6 +80,6 @@
   {{#if chatEnabled}}
   <script>window.__BOTDOCS_SEARCH_CONFIG__ = {{searchConfigJson}};</script>
   {{/if}}
-  <script type="module" src="/assets/js/bundle.js"></script>
+  <script type="module" src="{{root}}assets/js/bundle.js"></script>
 </body>
 </html>

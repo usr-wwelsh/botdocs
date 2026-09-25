@@ -8,6 +8,7 @@ import { getVectorSearch, SearchResult } from './vector-search.js';
 import { extractSnippet, SnippetExtraction } from './sentence-extractor.js';
 import { stripInlineLinks } from '../utils/markdown-links.js';
 import { ChunkMetadata } from '../../types/vector-db.js';
+import { fromSiteRoot } from '../utils/site-root.js';
 
 export interface RAGMessage {
   content: string;
@@ -109,7 +110,7 @@ export async function queryRAG(
 }
 
 function buildLink(metadata: ChunkMetadata): string {
-  let link = metadata.url;
+  let link = fromSiteRoot(metadata.url);
   if (metadata.headingId) {
     link += `#${metadata.headingId}`;
   }

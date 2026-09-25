@@ -5,6 +5,7 @@ import { TemplateEngine } from './template-engine.js';
 import { ProcessedDocument, NavigationItem } from '../types/document.js';
 import { BotdocsConfig } from '../types/config.js';
 import { underSrc } from './paths.js';
+import { rootPrefix, relativeUrl } from '../shared/site-root.js';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -98,6 +99,9 @@ export class SiteGenerator {
 
       // Prepare navigation data
       const adjacent = pageSequence.get(doc.url);
+      const root = rootPrefix(doc.url);
+      const relativeLink = (link?: { title: string; url: string }) =>
+        link && { ...link, url: relativeUrl(root, link.url) };
 
       // Render document content
       const contentTemplate = isIndex ? indexTemplate : docPageTemplate;
@@ -110,11 +114,11 @@ export class SiteGenerator {
           ? this.documents.filter(d => d !== doc).map(d => ({
               title: d.metadata.title,
               description: d.metadata.description,
-              url: d.url,
+              url: relativeUrl(root, d.url),
             }))
           : undefined,
-        prevPage: adjacent?.prev,
-        nextPage: adjacent?.next,
+        prevPage: relativeLink(adjacent?.prev),
+        nextPage: relativeLink(adjacent?.next),
       });
 
       // Render full page with layout
@@ -128,7 +132,8 @@ export class SiteGenerator {
         siteTitle: config.title || 'Documentation',
         siteDescription: config.description || '',
         content,
-        navigation: this.renderNavigation(navigation, doc.url),
+        root,
+        navigation: this.renderNavigation(navigation, root, doc.url),
         chatEnabled: config.chat?.enabled,
         ogUrl: config.baseUrl ? absoluteUrl(config.baseUrl, pageUrl) : undefined,
         searchConfigJson: JSON.stringify({
@@ -238,7 +243,7 @@ export class SiteGenerator {
    * other page sees the group collapsed to a single link that leads to
    * its root README.
    */
-  private renderNavigation(items: NavigationItem[], currentUrl?: string): string {
+  private renderNavigation(items: NavigationItem[], root: string, currentUrl?: string): string {
     if (items.length === 0) return '';
 
     let html = '<ul class="nav-list">';
@@ -254,10 +259,10 @@ export class SiteGenerator {
         .join(' ');
 
       html += `<li${liClasses ? ` class="${liClasses}"` : ''}>`;
-      html += `<a href="${item.url}"${isActive ? ' class="active"' : ''}>${item.title}</a>`;
+      html += `<a href="${relativeUrl(root, item.url)}"${isActive ? ' class="active"' : ''}>${item.title}</a>`;
 
       if (isExpanded) {
-        html += this.renderNavigation(item.children!, currentUrl);
+        html += this.renderNavigation(item.children!, root, currentUrl);
       }
 
       html += '</li>';

@@ -4,12 +4,11 @@
 
 export function initNavigation(): void {
   // Highlight active link based on current URL
-  const currentPath = window.location.pathname;
-  const navLinks = document.querySelectorAll('.sidebar-nav a');
+  const currentPath = window.location.pathname.replace(/\/$/, '/index.html');
+  const navLinks = document.querySelectorAll<HTMLAnchorElement>('.sidebar-nav a');
 
   navLinks.forEach((link) => {
-    const href = link.getAttribute('href');
-    if (href === currentPath || (currentPath === '/' && href === '/index.html')) {
+    if (link.pathname === currentPath) {
       link.classList.add('active');
     }
   });
