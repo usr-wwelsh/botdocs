@@ -15,7 +15,8 @@ Convert markdown documentation into beautiful static sites with AI-powered seman
 - **No Backend** - Everything runs in the browser
 - **Fast** - Syntax highlighting with Shiki
 - **Live Preview** - `--watch` rebuilds on save and serves the site locally
-- **SEO** - Optional Open Graph/Twitter tags and `sitemap.xml` via `baseUrl`
+- **SEO** - Optional Open Graph/Twitter tags, `sitemap.xml` and `robots.txt` via `baseUrl`
+- **Agent Friendly** - Raw `.md` source published next to every page, plus an `llms.txt` index
 
 ## Installation
 
@@ -105,7 +106,7 @@ Create `botdocs.config.json` in your docs directory:
 | `theme` | string | `"classic"` | Theme to use (classic, material, minimal, slate, modern) |
 | `customCss` | string | none | Path to a CSS file, resolved relative to the config file's directory. Appended after theme CSS in `bundle.css`, so same-specificity selectors override the theme without `!important` |
 | `attribution` | boolean | `true` | Show "Built with Botdocs" footer link |
-| `baseUrl` | string | none | Canonical URL where the site is hosted. When set, pages get `rel=canonical` and Open Graph/Twitter card tags, and a `sitemap.xml` is generated |
+| `baseUrl` | string | none | Canonical URL where the site is hosted. When set, pages get `rel=canonical` and Open Graph/Twitter card tags, a `sitemap.xml` and `robots.txt` are generated, and `llms.txt` links become absolute |
 | `chat.enabled` | boolean | `true` | Enable AI chatbot |
 | `chat.welcomeMessage` | string | `"Ask me anything about the docs!"` | Chatbot welcome message |
 | `build.chunkSize` | number | `500` | Text chunk size for embeddings |

@@ -106,8 +106,18 @@ When set, each page emits
 .B rel=canonical
 and Open Graph/Twitter card metadata, and a
 .B sitemap.xml
-listing every generated page is written to the output directory.
-When unset, these tags are omitted and no sitemap is generated.
+listing every generated page and a
+.B robots.txt
+pointing at it are written to the output directory, and
+.B llms.txt
+links become absolute.
+When unset, these tags are omitted and no sitemap or robots.txt is generated.
+.PP
+Every build copies each page's markdown source next to its HTML and writes an
+.B llms.txt
+index linking to those
+.B .md
+files, so agents can read the docs without parsing HTML.
 .PP
 .B build.minChunkSize
 folds chunks smaller than this many estimated tokens into a neighboring
