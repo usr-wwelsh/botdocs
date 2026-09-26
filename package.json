@@ -1,6 +1,6 @@
 {
   "name": "botdocs",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "CLI tool that converts markdown documentation into a static website with an optional client-side AI chatbot",
   "author": "usr-wwelsh <https://wwel.sh>",
   "license": "MIT",
