@@ -150,6 +150,7 @@ export class SiteGenerator {
       );
       mkdirSync(dirname(outputPath), { recursive: true });
       writeFileSync(outputPath, html, 'utf-8');
+      cpSync(doc.filePath, join(outputDir, doc.relativePath));
     }
 
     // Copy index.html if README.md exists
@@ -169,11 +170,38 @@ export class SiteGenerator {
 
     console.log(`Generated ${this.documents.length} HTML pages`);
 
+    this.writeLlmsTxt(outputDir, config);
+
     if (config.baseUrl) {
       this.writeSitemap(outputDir, config.baseUrl);
+      this.writeRobotsTxt(outputDir, config.baseUrl);
     }
 
     return this.documents;
+  }
+
+  private writeLlmsTxt(outputDir: string, config: BotdocsConfig): void {
+    const oneLine = (value: string) => stripHtml(value).replace(/\s+/g, ' ').trim();
+    const isRootIndex = (doc: ProcessedDocument) =>
+      doc.relativePath === 'README.md' || doc.relativePath === 'index.md';
+    const pages = [...this.documents.filter(isRootIndex), ...this.documents.filter((doc) => !isRootIndex(doc))]
+      .map((doc) => {
+        const title = oneLine(doc.metadata.title || basename(doc.relativePath, '.md'));
+        const url = config.baseUrl ? absoluteUrl(config.baseUrl, doc.relativePath) : doc.relativePath;
+        const description = oneLine(doc.metadata.description || '');
+        return `- [${title}](${url})${description ? `: ${description}` : ''}`;
+      })
+      .join('\n');
+    const summary = oneLine(config.description || '');
+    const llms = `# ${oneLine(config.title || 'Documentation')}\n\n${summary ? `> ${summary}\n\n` : ''}## Docs\n\n${pages}\n`;
+    writeFileSync(join(outputDir, 'llms.txt'), llms, 'utf-8');
+    console.log('Generated llms.txt');
+  }
+
+  private writeRobotsTxt(outputDir: string, baseUrl: string): void {
+    const robots = `User-agent: *\nAllow: /\n\nSitemap: ${absoluteUrl(baseUrl, 'sitemap.xml')}\n`;
+    writeFileSync(join(outputDir, 'robots.txt'), robots, 'utf-8');
+    console.log('Generated robots.txt');
   }
 
   private writeSitemap(outputDir: string, baseUrl: string): void {
