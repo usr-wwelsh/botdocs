@@ -151,3 +151,12 @@ test('treats an inflected form of a documented word as known', async () => {
 
   assert.equal(results.length, 1);
 });
+
+test('treats a word as known when the docs only use a longer derived form', async () => {
+  const search = new VectorSearch();
+  search.setDatabase(makeDB([makeChunk('moods', [0.8, 0.6], 'detects happiness in songs')]));
+
+  const results = await search.search([1, 0], 'happy songs', 5, 0.5);
+
+  assert.equal(results.length, 1);
+});
