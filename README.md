@@ -156,7 +156,7 @@ botdocs ./test-docs
 
 `npm run eval` scores search against a golden set of queries (`eval/golden.json`) over a frozen corpus snapshot (`eval/corpus/`). It compares five retrievers: grep, BM25, dense, hybrid (RRF), and the shipped hybrid with its relevance gates. It reports recall@5 and MRR on answerable queries, plus a false-positive rate on queries that should return nothing.
 
-Each golden entry has an `id`, a `query`, a `split` (`tune` or `holdout`), and `expect`: labels like `turbolab/README.md#memory` (one section) or `omniMux/README.md` (any section of the page). An empty `expect` means nothing should match. Tune thresholds against `tune` only; `holdout` keeps the numbers honest.
+Each golden entry has an `id`, a `query`, a `split` (`tune` or `holdout`), and `expect`: labels like `turbolab/README.md#memory` (one section) or `omniMux/README.md` (any section of the page). An empty `expect` means nothing should match. The id prefix sets the query's kind (`identifier-`, `paraphrase-`, `buried-`, `cross-`, `negative-`), and answerable queries are also scored per kind. Tune thresholds against `tune` only; `holdout` keeps the numbers honest.
 
 Embeddings are cached in `eval/.cache/`, keyed by corpus, chunker, embedder, and build config, so only the first run embeds the corpus.
 

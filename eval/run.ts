@@ -125,6 +125,18 @@ async function main() {
     }
   }
 
+  const kinds = [...new Set(golden.filter((q) => q.expect.length > 0).map((q) => q.id.split('-')[0]))];
+  console.log(`\nanswerable by kind (all splits): R@k / MRR\n`);
+  console.log(`${'kind'.padEnd(14)} ${Object.keys(arms).map((a) => a.padStart(13)).join('')}`);
+  for (const kind of kinds) {
+    const picked = golden.flatMap((q, i) => (q.id.startsWith(`${kind}-`) ? [i] : []));
+    const cells = Object.keys(arms).map((arm) => {
+      const s = summarize(picked.map((i) => golden[i]), picked.map((i) => results[arm][i]), K);
+      return `${s.recall.toFixed(2)} / ${s.mrr.toFixed(2)}`.padStart(13);
+    });
+    console.log(`${`${kind} (${picked.length})`.padEnd(14)} ${cells.join('')}`);
+  }
+
   console.log(`\nper query: first relevant rank (answerable) or result count (negative)\n`);
   console.log(`${'id'.padEnd(28)} ${Object.keys(arms).map((a) => a.padStart(8)).join('')}`);
   golden.forEach((q, i) => {
