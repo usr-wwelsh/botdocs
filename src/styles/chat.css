@@ -501,7 +501,7 @@
   margin: 3rem -3rem 0 -3rem;
   padding: 1rem 3rem;
   background: var(--link-color);
-  color: white;
+  color: var(--bg-primary);
   text-align: center;
   font-size: 0.875rem;
   font-weight: 500;
