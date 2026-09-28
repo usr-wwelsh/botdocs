@@ -24,10 +24,13 @@ Thumbs.db
 *.tsbuildinfo
 
 # Test/example documentation folders
-docs/
-my-docs/
-example-docs/
+/docs/
+/my-docs/
+/example-docs/
 
 # Environment
 .env
 .env.local
+
+# Eval embedding cache
+eval/.cache/
