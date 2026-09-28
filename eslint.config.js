@@ -14,7 +14,7 @@ export default tseslint.config(
     ],
   },
   {
-    files: ['src/**/*.ts'],
+    files: ['src/**/*.ts', 'eval/**/*.ts'],
     extends: [...tseslint.configs.recommended],
     rules: {
       '@typescript-eslint/no-explicit-any': 'error',

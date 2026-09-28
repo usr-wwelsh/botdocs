@@ -1,0 +1,32 @@
+[
+  {
+    "id": "identifier-mcp-tool",
+    "query": "semantic_search_memory",
+    "split": "tune",
+    "expect": ["turbolab/README.md#memory"]
+  },
+  {
+    "id": "paraphrase-agent-memory",
+    "query": "can an AI coding assistant read and write my notes in turbolab",
+    "split": "holdout",
+    "expect": ["turbolab/README.md#memory"]
+  },
+  {
+    "id": "paraphrase-playlist-import",
+    "query": "turn a youtube playlist into a navidrome playlist",
+    "split": "tune",
+    "expect": ["omniMux/README.md"]
+  },
+  {
+    "id": "negative-oauth",
+    "query": "How do I configure OAuth single sign-on?",
+    "split": "tune",
+    "expect": []
+  },
+  {
+    "id": "negative-near-domain",
+    "query": "How do I deploy turbolab on Kubernetes?",
+    "split": "holdout",
+    "expect": []
+  }
+]

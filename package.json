@@ -26,7 +26,8 @@
     "dev": "tsc --watch",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.client.json && tsc --noEmit -p tsconfig.test.json",
-    "test": "tsx --test 'src/**/*.test.ts'",
+    "test": "tsx --test 'src/**/*.test.ts' 'eval/**/*.test.ts'",
+    "eval": "tsx eval/run.ts",
     "test:integration": "npm run build && tsx --test 'test/integration/**/*.test.ts'",
     "ci": "npm run build && npm run build:client && npm run typecheck && npm run lint && npm test && npm run test:integration",
     "prepublishOnly": "npm run build && npm run build:client"
