@@ -8,6 +8,10 @@
 
 const K1 = 1.5;
 const B = 0.75;
+// Crude stemming: a query term is known when some corpus term shares its
+// first STEM_LENGTH characters, so "scored" matches "score" and "week"
+// matches "weekly", while "kubernetes" still matches nothing.
+const STEM_LENGTH = 5;
 
 const STOPWORDS = new Set([
   'a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for', 'from', 'has',
@@ -36,6 +40,7 @@ export class BM25Index {
   private docLength = new Map<string, number>();
   private avgDocLength = 0;
   private docIds: string[] = [];
+  private stems = new Set<string>();
 
   constructor(docs: BM25Document[]) {
     let totalLength = 0;
@@ -54,6 +59,7 @@ export class BM25Index {
 
       for (const term of freqs.keys()) {
         this.docFreq.set(term, (this.docFreq.get(term) ?? 0) + 1);
+        for (let i = 1; i <= STEM_LENGTH; i++) this.stems.add(term.slice(0, i));
       }
     }
 
@@ -83,6 +89,13 @@ export class BM25Index {
     }
 
     return score;
+  }
+
+  /**
+   * True when every query term, or its stem, appears somewhere in the corpus.
+   */
+  coversQuery(query: string): boolean {
+    return tokenize(query).every((term) => this.stems.has(term.slice(0, STEM_LENGTH)));
   }
 
   /**

@@ -133,3 +133,21 @@ test('still respects topK after threshold filtering and hybrid re-ranking', asyn
 
   assert.equal(results.length, 2);
 });
+
+test('abstains when the query names something the docs never mention', async () => {
+  const search = new VectorSearch();
+  search.setDatabase(makeDB([makeChunk('docker', [0.8, 0.6], 'deploy turbolab with docker')]));
+
+  const results = await search.search([1, 0], 'deploy turbolab on kubernetes', 5, 0.5);
+
+  assert.equal(results.length, 0);
+});
+
+test('treats an inflected form of a documented word as known', async () => {
+  const search = new VectorSearch();
+  search.setDatabase(makeDB([makeChunk('backups', [0.8, 0.6], 'weekly backup snapshots')]));
+
+  const results = await search.search([1, 0], 'week backup snapshot', 5, 0.5);
+
+  assert.equal(results.length, 1);
+});

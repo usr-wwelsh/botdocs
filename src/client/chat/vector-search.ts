@@ -27,6 +27,11 @@ const RRF_K = 60;
 // score > 0) catches what the cosine gate misses, since an unrelated
 // query shares no vocabulary with the corpus at all. Near-exact semantic
 // matches (paraphrases with zero literal overlap) are still let through.
+//
+// Per-chunk overlap alone is too weak: generic words like "deploy" or
+// "configure" match dozens of chunks for a question the docs can't answer.
+// A query naming a term the corpus never uses (e.g. "kubernetes") is
+// abstained on outright, under the same near-exact bypass.
 const KEYWORD_BYPASS_SCORE = 0.9;
 
 export class VectorSearch {
@@ -107,6 +112,8 @@ export class VectorSearch {
     const bm25Ranked = [...bm25Scores.entries()].sort((a, b) => b[1] - a[1]);
     const bm25Rank = new Map(bm25Ranked.map(([id], i) => [id, i]));
 
+    const coversQuery = this.getBM25Index().coversQuery(queryText);
+
     const fused = vectorScores
       .map(({ chunk, score }) => {
         const vRank = vectorRank.get(chunk.id)!;
@@ -116,7 +123,7 @@ export class VectorSearch {
         return { chunk, score, rrfScore, bm25Score };
       })
       .filter((r) => r.score >= minScore)
-      .filter((r) => r.bm25Score > 0 || r.score >= KEYWORD_BYPASS_SCORE)
+      .filter((r) => (coversQuery && r.bm25Score > 0) || r.score >= KEYWORD_BYPASS_SCORE)
       .sort((a, b) => b.rrfScore - a.rrfScore);
 
     return fused.slice(0, topK).map(({ chunk, score }) => ({ chunk, score }));
