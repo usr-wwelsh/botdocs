@@ -22,9 +22,8 @@ test('render supports GitHub alert callouts', () => {
   assert.match(html, /markdown-alert-note/);
 });
 
-// Shared across the processFile tests below: setupShiki() loads every
-// bundled language grammar on first call (~15s) and memoizes per instance,
-// so a fresh MarkdownProcessor per test would pay that cost repeatedly.
+// Shared across the processFile tests below so Shiki's highlighter and
+// grammars load once rather than per test.
 const sharedProcessor = new MarkdownProcessor();
 
 test('processFile parses front matter and title from an explicit heading', async () => {
@@ -67,4 +66,33 @@ test('processFile derives the root URL for index.md', async () => {
   const doc = await sharedProcessor.processFile('/docs/index.md', '/docs', '# Home\n');
 
   assert.equal(doc.url, '/');
+});
+
+test('processFile syntax-highlights fenced code in a known language', async () => {
+  const doc = await sharedProcessor.processFile('/docs/a.md', '/docs', '```go\nfunc main() {}\n```');
+
+  assert.match(doc.html, /class="shiki/);
+  assert.match(doc.html, /func/);
+});
+
+test('processFile highlights a different language in a later file', async () => {
+  const doc = await sharedProcessor.processFile('/docs/b.md', '/docs', '```rust\nfn main() {}\n```');
+
+  assert.match(doc.html, /class="shiki/);
+});
+
+test('processFile renders an unknown fence language as escaped plain code', async () => {
+  const doc = await sharedProcessor.processFile('/docs/c.md', '/docs', '```nosuchlang\n<b>x</b>\n```');
+
+  assert.doesNotMatch(doc.html, /<b>x/);
+});
+
+test('processFile highlights correctly when files are processed concurrently', async () => {
+  const processor = new MarkdownProcessor();
+  const docs = await Promise.all([
+    processor.processFile('/docs/d.md', '/docs', '```python\nprint(1)\n```'),
+    processor.processFile('/docs/e.md', '/docs', '```bash\necho hi\n```'),
+  ]);
+
+  for (const doc of docs) assert.match(doc.html, /class="shiki/);
 });

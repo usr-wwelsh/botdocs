@@ -8,14 +8,14 @@ import { full as emoji } from 'markdown-it-emoji';
 import sub from 'markdown-it-sub';
 import sup from 'markdown-it-sup';
 import { fromHighlighter } from '@shikijs/markdown-it/core';
-import { bundledLanguages, getHighlighter } from 'shiki';
+import { BundledLanguage, bundledLanguages, createHighlighter, Highlighter } from 'shiki';
 import matter from 'gray-matter';
 import { ProcessedDocument, DocumentMetadata } from '../types/document.js';
 import { relative, basename, dirname } from 'path';
 
 export class MarkdownProcessor {
   private md: MarkdownIt;
-  private shikiInitialized: boolean = false;
+  private highlighter: Promise<Highlighter | null> | null = null;
 
   constructor() {
     this.md = new MarkdownIt({
@@ -88,13 +88,16 @@ export class MarkdownProcessor {
       .replace(/&#0?39;/g, "'");
   }
 
-  private async setupShiki() {
-    if (this.shikiInitialized) return;
+  private setupShiki(): Promise<Highlighter | null> {
+    this.highlighter ??= this.createShiki();
+    return this.highlighter;
+  }
 
+  private async createShiki(): Promise<Highlighter | null> {
     try {
-      const highlighter = await getHighlighter({
+      const highlighter = await createHighlighter({
         themes: ['github-light', 'github-dark'],
-        langs: Object.keys(bundledLanguages),
+        langs: [],
       });
 
       // Override markdown-it highlight with Shiki, but with error handling
@@ -120,10 +123,25 @@ export class MarkdownProcessor {
         }
       };
 
-      this.shikiInitialized = true;
+      return highlighter;
     } catch (error) {
       console.warn('Failed to initialize Shiki, falling back to default code rendering');
+      return null;
     }
+  }
+
+  // Grammars are loaded on demand: loading every bundled language up front
+  // costs tens of seconds, while a docs corpus uses only a handful.
+  private async loadFenceLanguages(highlighter: Highlighter, markdown: string): Promise<void> {
+    const loaded = highlighter.getLoadedLanguages();
+    const langs = new Set(
+      this.md
+        .parse(markdown, {})
+        .filter((token) => token.type === 'fence')
+        .map((token) => token.info.trim().split(/\s+/)[0])
+        .filter((lang): lang is BundledLanguage => lang in bundledLanguages && !loaded.includes(lang))
+    );
+    await Promise.all([...langs].map((lang) => highlighter.loadLanguage(lang)));
   }
 
   /**
@@ -134,11 +152,11 @@ export class MarkdownProcessor {
     inputDir: string,
     content: string
   ): Promise<ProcessedDocument> {
-    // Ensure Shiki is initialized
-    await this.setupShiki();
+    const highlighter = await this.setupShiki();
 
     // Parse front matter
     const { data: metadata, content: markdownContent } = matter(content);
+    if (highlighter) await this.loadFenceLanguages(highlighter, markdownContent);
 
     // Convert markdown to HTML
     const html = this.md.render(markdownContent);
