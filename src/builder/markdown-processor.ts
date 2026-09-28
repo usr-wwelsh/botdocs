@@ -7,7 +7,6 @@ import footnote from 'markdown-it-footnote';
 import { full as emoji } from 'markdown-it-emoji';
 import sub from 'markdown-it-sub';
 import sup from 'markdown-it-sup';
-import { fromHighlighter } from '@shikijs/markdown-it/core';
 import { BundledLanguage, bundledLanguages, createHighlighter, Highlighter } from 'shiki';
 import matter from 'gray-matter';
 import { ProcessedDocument, DocumentMetadata } from '../types/document.js';
