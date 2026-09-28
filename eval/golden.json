@@ -78,6 +78,42 @@
     "expect": ["socialChat/README.md#automatic-db-backups"]
   },
   {
+    "id": "buried-seed-secrets",
+    "query": "does fanout copy my hidden secrets file when I give it a folder",
+    "split": "tune",
+    "expect": ["fanoutd/README.md#seeding-a-workspace"]
+  },
+  {
+    "id": "buried-arxiv-outage",
+    "query": "what happens to the research digest site if arxiv blocks me for a few days",
+    "split": "tune",
+    "expect": ["Research-Digest/README.md#how-it-works"]
+  },
+  {
+    "id": "buried-metric-history",
+    "query": "how much history does the badge server keep",
+    "split": "tune",
+    "expect": ["vitalSVG/README.md#vitalsvg"]
+  },
+  {
+    "id": "buried-thread-libs",
+    "query": "does turbolab use all my cpu cores for the math libraries",
+    "split": "holdout",
+    "expect": ["turbolab/README.md#how-it-works"]
+  },
+  {
+    "id": "cross-mood",
+    "query": "which projects can tell whether a song is happy or sad",
+    "split": "tune",
+    "expect": ["Mood-Detector/README.md", "omniMux/README.md#mood-analysis"]
+  },
+  {
+    "id": "cross-phone-apps",
+    "query": "which of these can I install on my phone",
+    "split": "holdout",
+    "expect": ["omniMux/README.md#pwa", "socialChat/README.md#android-client", "init-launcher/README.md", "dominion-tracker/README.md#features"]
+  },
+  {
     "id": "negative-oauth",
     "query": "How do I configure OAuth single sign-on?",
     "split": "tune",
