@@ -18,6 +18,66 @@
     "expect": ["omniMux/README.md"]
   },
   {
+    "id": "identifier-docignore",
+    "query": ".docignore",
+    "split": "tune",
+    "expect": ["Dependadocs/README.md#ignoring-files"]
+  },
+  {
+    "id": "paraphrase-old-gpu",
+    "query": "separating vocals crashes on my ancient laptop graphics card",
+    "split": "tune",
+    "expect": ["karaoke-maker/GPU_TROUBLESHOOTING.md"]
+  },
+  {
+    "id": "paraphrase-dm-privacy",
+    "query": "can whoever runs the socialChat server read my private messages",
+    "split": "tune",
+    "expect": ["socialChat/README.md#features"]
+  },
+  {
+    "id": "buried-league-ties",
+    "query": "how are ties scored in the game night standings",
+    "split": "tune",
+    "expect": ["dominion-tracker/README.md#league-points"]
+  },
+  {
+    "id": "paraphrase-ram-quant",
+    "query": "which model file does turbolab pick when my box is short on memory",
+    "split": "tune",
+    "expect": ["turbolab/README.md#how-it-works"]
+  },
+  {
+    "id": "cross-local-llm",
+    "query": "which tools can write their summaries with my own local model instead of a cloud service",
+    "split": "tune",
+    "expect": ["git-digest/README.md#llm-backend-cloud-optional", "Research-Digest/README.md"]
+  },
+  {
+    "id": "paraphrase-badge-colors",
+    "query": "make the status badge match my github dark mode colors",
+    "split": "tune",
+    "expect": ["vitalSVG/README.md#theming"]
+  },
+  {
+    "id": "paraphrase-praise",
+    "query": "does complimenting a model on broken code make its answers worse",
+    "split": "tune",
+    "expect": ["emotional-contamination/FINDINGS.md#3-the-praise-paradox-novel-discovery"]
+  },
+  {
+    "id": "paraphrase-smart-lights",
+    "query": "phone home screen button that switches my lights on",
+    "split": "holdout",
+    "expect": ["init-launcher/README.md#features"]
+  },
+  {
+    "id": "buried-backup-restore",
+    "query": "get my socialChat data back from last week's snapshot",
+    "split": "holdout",
+    "expect": ["socialChat/README.md#automatic-db-backups"]
+  },
+  {
     "id": "negative-oauth",
     "query": "How do I configure OAuth single sign-on?",
     "split": "tune",
@@ -26,6 +86,36 @@
   {
     "id": "negative-near-domain",
     "query": "How do I deploy turbolab on Kubernetes?",
+    "split": "holdout",
+    "expect": []
+  },
+  {
+    "id": "negative-2fa",
+    "query": "turn on two-factor login for socialChat accounts",
+    "split": "tune",
+    "expect": []
+  },
+  {
+    "id": "negative-gitlab",
+    "query": "run Dependadocs on GitLab merge requests",
+    "split": "tune",
+    "expect": []
+  },
+  {
+    "id": "negative-terraform",
+    "query": "how do I release a stuck Terraform state lock",
+    "split": "tune",
+    "expect": []
+  },
+  {
+    "id": "negative-rocm",
+    "query": "run turbolab on an AMD graphics card with ROCm",
+    "split": "holdout",
+    "expect": []
+  },
+  {
+    "id": "negative-slack-alerts",
+    "query": "send a Slack alert when vitalSVG sees a container go down",
     "split": "holdout",
     "expect": []
   }
