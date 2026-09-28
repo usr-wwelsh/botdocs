@@ -21,7 +21,8 @@ export interface RAGResponse {
 
 let isInitialized = false;
 let topK = 5;
-let minScore = 0.75;
+export const DEFAULT_MIN_SCORE = 0.75;
+let minScore = DEFAULT_MIN_SCORE;
 
 // Must stay above the default minScore, or every result that clears the
 // relevance floor would also count as "highly relevant," making the label
