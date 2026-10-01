@@ -50,7 +50,9 @@ export class VectorDBBuilder {
     const changedDocs: ProcessedDocument[] = [];
     const unchangedDocs: ProcessedDocument[] = [];
 
-    for (const doc of documents) {
+    const searchable = documents.filter((doc) => doc.metadata.search !== false);
+
+    for (const doc of searchable) {
       const hash = this.hashContent(doc.content);
       fileHashes.set(doc.relativePath, hash);
 
@@ -69,7 +71,7 @@ export class VectorDBBuilder {
       }
     }
 
-    console.log(`Unchanged: ${unchangedDocs.length}, Changed: ${changedDocs.length}, Total: ${documents.length}`);
+    console.log(`Unchanged: ${unchangedDocs.length}, Changed: ${changedDocs.length}, Total: ${searchable.length}`);
 
     // Step 3: Reuse cached chunks for unchanged documents
     const reusedChunks: DocumentChunk[] = [];

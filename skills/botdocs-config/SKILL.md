@@ -49,6 +49,8 @@ the rest in.
 
 Per-page overrides: front matter `title` in a `.md` file wins over the
 auto-detected first-`h1` title (`src/builder/markdown-processor.ts`).
+Front matter `search: false` still renders the page but keeps it out of the
+search index — useful for a landing page full of example queries.
 
 ## CLI flags
 
