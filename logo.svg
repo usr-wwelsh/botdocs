@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="botdocs">
+<style>
+.s{stroke:#1a1a1a;stroke-width:6;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.a{fill:#2f6df6}
+@media (prefers-color-scheme:dark){.s{stroke:#f2f2f2}.a{fill:#6b98ff}}
+</style>
+<path class="s" d="M24 16h36l16 16v52H24z"/>
+<path class="s" d="M60 16v16h16"/>
+<circle class="a" cx="40" cy="52" r="5"/>
+<circle class="a" cx="60" cy="52" r="5"/>
+<path class="s" d="M38 70h24"/>
+</svg>
