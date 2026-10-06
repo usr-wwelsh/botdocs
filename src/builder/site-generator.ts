@@ -89,6 +89,9 @@ export class SiteGenerator {
       'utf-8'
     );
 
+    mkdirSync(join(outputDir, 'assets'), { recursive: true });
+    cpSync(join(templatesDir, '..', '..', 'logo.svg'), join(outputDir, 'assets', 'logo.svg'));
+
     // Generate HTML pages
     console.log('Generating HTML pages...');
 

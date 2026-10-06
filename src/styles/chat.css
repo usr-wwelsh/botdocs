@@ -525,6 +525,18 @@
   border-top: none;
 }
 
+.botdocs-attribution {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.botdocs-logo {
+  width: 28px;
+  height: 28px;
+}
+
 .botdocs-attribution a {
   color: var(--text-secondary);
   text-decoration: none;

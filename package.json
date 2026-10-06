@@ -17,6 +17,7 @@
     "src/templates/",
     "src/styles/",
     "man/",
+    "logo.svg",
     "README.md",
     "LICENSE"
   ],

@@ -100,3 +100,31 @@ test('pages without a configured baseUrl omit og:url and canonical', async () =>
     site.cleanup();
   }
 });
+
+test('generate ships the botdocs logo as favicon on every page', async () => {
+  const site = makeDocsSite();
+  try {
+    await new SiteGenerator().generate(site.inputDir, site.outputDir, defaultConfig);
+    assert.ok(existsSync(join(site.outputDir, 'assets', 'logo.svg')));
+    const root = readFileSync(join(site.outputDir, 'README.html'), 'utf-8');
+    const nested = readFileSync(join(site.outputDir, 'guides', 'setup.html'), 'utf-8');
+    assert.match(root, /<link rel="icon" type="image\/svg\+xml" href="\.\/assets\/logo\.svg">/);
+    assert.match(nested, /<link rel="icon" type="image\/svg\+xml" href="\.\.\/assets\/logo\.svg">/);
+  } finally {
+    site.cleanup();
+  }
+});
+
+test('attribution footer shows the logo and disappears with attribution:false', async () => {
+  const site = makeDocsSite();
+  try {
+    await new SiteGenerator().generate(site.inputDir, site.outputDir, defaultConfig);
+    const on = readFileSync(join(site.outputDir, 'README.html'), 'utf-8');
+    assert.match(on, /<footer class="botdocs-attribution">[\s\S]*<img class="botdocs-logo" src="\.\/assets\/logo\.svg"/);
+    await new SiteGenerator().generate(site.inputDir, site.outputDir, { ...defaultConfig, attribution: false });
+    const off = readFileSync(join(site.outputDir, 'README.html'), 'utf-8');
+    assert.doesNotMatch(off, /botdocs-logo/);
+  } finally {
+    site.cleanup();
+  }
+});
