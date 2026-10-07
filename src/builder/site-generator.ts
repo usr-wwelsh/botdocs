@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync, readdirSync, mkdirSync, cpSync } from 'fs';
+import { readFileSync, writeFileSync, readdirSync, mkdirSync, cpSync, existsSync } from 'fs';
 import { join, dirname, basename } from 'path';
 import { MarkdownProcessor } from './markdown-processor.js';
 import { TemplateEngine } from './template-engine.js';
@@ -100,7 +100,9 @@ export class SiteGenerator {
     mkdirSync(join(outputDir, 'assets'), { recursive: true });
     cpSync(join(templatesDir, '..', '..', 'logo.svg'), join(outputDir, 'assets', 'logo.svg'));
     if (config.baseUrl) {
-      cpSync(join(templatesDir, '..', '..', 'og.png'), join(outputDir, 'assets', 'og.png'));
+      const customCard = join(inputDir, 'og.png');
+      const card = existsSync(customCard) ? customCard : join(templatesDir, '..', '..', 'og.png');
+      cpSync(card, join(outputDir, 'assets', 'og.png'));
     }
 
     // Generate HTML pages

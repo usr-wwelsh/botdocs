@@ -205,3 +205,17 @@ test('baseUrl adds JSON-LD structured data with the canonical url', async () => 
     site.cleanup();
   }
 });
+
+test('an og.png in the input folder replaces the default social card', async () => {
+  const site = makeDocsSite();
+  try {
+    writeFileSync(join(site.inputDir, 'og.png'), 'custom-card');
+    await new SiteGenerator().generate(site.inputDir, site.outputDir, {
+      ...defaultConfig,
+      baseUrl: 'https://example.com/',
+    });
+    assert.equal(readFileSync(join(site.outputDir, 'assets', 'og.png'), 'utf-8'), 'custom-card');
+  } finally {
+    site.cleanup();
+  }
+});

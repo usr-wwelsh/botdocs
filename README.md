@@ -17,7 +17,7 @@ Convert markdown documentation into beautiful static sites with AI-powered seman
 - **No Backend** - Everything runs in the browser
 - **Fast** - Syntax highlighting with Shiki
 - **Live Preview** - `--watch` rebuilds on save and serves the site locally
-- **SEO** - Auto descriptions, logo social card (Open Graph/Twitter), JSON-LD, `sitemap.xml` and `robots.txt` via `baseUrl`
+- **SEO** - Auto descriptions, logo social card (Open Graph/Twitter, override by adding `og.png` to your docs folder), JSON-LD, `sitemap.xml` and `robots.txt` via `baseUrl`
 - **Agent Friendly** - Raw `.md` source published next to every page, plus an `llms.txt` index
 
 ## Installation
