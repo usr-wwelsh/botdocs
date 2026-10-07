@@ -115,8 +115,9 @@ test('processFile truncates derived descriptions to 160 characters on a word bou
   const content = `# Guide\n\n${'word '.repeat(60)}`;
   const doc = await sharedProcessor.processFile('/docs/guide.md', '/docs', content);
 
-  assert.ok(doc.metadata.description.length <= 160);
-  assert.match(doc.metadata.description, /word…$/);
+  const description = doc.metadata.description ?? '';
+  assert.ok(description.length <= 160);
+  assert.match(description, /word…$/);
 });
 
 test('processFile leaves description empty when there is no prose', async () => {
