@@ -15,6 +15,14 @@ function stripHtml(value: string): string {
   return value.replace(/<[^>]*>/g, '');
 }
 
+function escapeAttr(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
 export function absoluteUrl(baseUrl: string, urlPath: string): string {
   return `${baseUrl.replace(/\/+$/, '')}${urlPath.startsWith('/') ? urlPath : `/${urlPath}`}`;
 }
@@ -91,6 +99,9 @@ export class SiteGenerator {
 
     mkdirSync(join(outputDir, 'assets'), { recursive: true });
     cpSync(join(templatesDir, '..', '..', 'logo.svg'), join(outputDir, 'assets', 'logo.svg'));
+    if (config.baseUrl) {
+      cpSync(join(templatesDir, '..', '..', 'og.png'), join(outputDir, 'assets', 'og.png'));
+    }
 
     // Generate HTML pages
     console.log('Generating HTML pages...');
@@ -124,21 +135,39 @@ export class SiteGenerator {
         nextPage: relativeLink(adjacent?.next),
       });
 
+      const pageTitle = stripHtml(doc.metadata.title || 'Documentation').trim();
+      const siteTitle = stripHtml(config.title || 'Documentation').trim();
+      const fullTitle = pageTitle === siteTitle ? pageTitle : `${pageTitle} - ${siteTitle}`;
+      const metaDescription = stripHtml(doc.metadata.description || config.description || '').trim();
+      const ogImage = config.baseUrl ? absoluteUrl(config.baseUrl, 'assets/og.png') : undefined;
+      const ogUrl = config.baseUrl ? absoluteUrl(config.baseUrl, pageUrl) : undefined;
+      const jsonLd = ogUrl
+        ? JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': isIndex ? 'WebSite' : 'TechArticle',
+            ...(isIndex ? { name: siteTitle } : { headline: pageTitle }),
+            description: metaDescription,
+            url: ogUrl,
+            image: ogImage,
+            isPartOf: { '@type': 'WebSite', name: siteTitle, url: absoluteUrl(config.baseUrl!, '/') },
+          }).replace(/</g, '\\u003c')
+        : undefined;
+
       // Render full page with layout
       const html = this.templateEngine.renderWithLoops(layoutTemplate, {
-        title: doc.metadata.title || 'Documentation',
-        // The template engine doesn't escape interpolated values, so
-        // config.description may contain markup (e.g. a hotlink) meant
-        // for the visible siteDescription below — strip it here since
-        // this one lands inside a <meta content="..."> attribute.
-        description: stripHtml(doc.metadata.description || config.description || ''),
+        title: escapeAttr(fullTitle),
+        siteName: escapeAttr(siteTitle),
+        ogImage,
+        twitterCard: ogImage ? 'summary_large_image' : 'summary',
+        jsonLd,
+        description: escapeAttr(metaDescription),
         siteTitle: config.title || 'Documentation',
         siteDescription: config.description || '',
         content,
         root,
         navigation: this.renderNavigation(navigation, root, doc.url),
         chatEnabled: config.chat?.enabled,
-        ogUrl: config.baseUrl ? absoluteUrl(config.baseUrl, pageUrl) : undefined,
+        ogUrl,
         searchConfigJson: JSON.stringify({
           topK: config.build?.topK ?? 3,
           minScore: config.build?.minScore ?? 0.75,

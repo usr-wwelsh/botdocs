@@ -166,6 +166,7 @@ export class MarkdownProcessor {
 
     // Extract title from metadata or first h1
     const title = metadata.title || this.extractTitle(markdownContent, relativePath);
+    const description = metadata.description || this.extractDescription(markdownContent);
 
     return {
       filePath,
@@ -175,9 +176,38 @@ export class MarkdownProcessor {
       metadata: {
         ...metadata,
         title,
+        ...(description ? { description } : {}),
       },
       url,
     };
+  }
+
+  /**
+   * Derive a search-result description from the first prose paragraph,
+   * skipping headings, badges, lists, tables, quotes, HTML and code, and
+   * trimming to 160 characters on a word boundary.
+   */
+  private extractDescription(content: string): string {
+    const withoutCodeFences = content.replace(/^```[\s\S]*?^```/gm, '');
+    for (const block of withoutCodeFences.split(/\n\s*\n/)) {
+      const trimmed = block.trim();
+      if (
+        !trimmed ||
+        /^[#<|>\-*!]/.test(trimmed) ||
+        trimmed.startsWith('[![') ||
+        /^\d+\./.test(trimmed)
+      ) {
+        continue;
+      }
+      const text = trimmed
+        .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+        .replace(/[*_`]/g, '')
+        .replace(/\s+/g, ' ');
+      if (text.length < 40) continue;
+      if (text.length <= 160) return text;
+      return `${text.slice(0, 159).replace(/\s+\S*$/, '').replace(/[\s,;:.-]+$/, '')}…`;
+    }
+    return '';
   }
 
   /**

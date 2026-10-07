@@ -96,3 +96,31 @@ test('processFile highlights correctly when files are processed concurrently', a
 
   for (const doc of docs) assert.match(doc.html, /class="shiki/);
 });
+
+test('processFile derives a description from the first prose paragraph', async () => {
+  const content = '# Guide\n\n[![badge](https://x/y.svg)](https://x)\n\nBotdocs turns [markdown](https://m.d) into **fast** static sites with `search`.\n\nSecond paragraph.';
+  const doc = await sharedProcessor.processFile('/docs/guide.md', '/docs', content);
+
+  assert.equal(doc.metadata.description, 'Botdocs turns markdown into fast static sites with search.');
+});
+
+test('processFile keeps a front matter description over derived prose', async () => {
+  const content = '---\ndescription: Explicit\n---\n# Guide\n\nThis paragraph is long enough to be a description.';
+  const doc = await sharedProcessor.processFile('/docs/guide.md', '/docs', content);
+
+  assert.equal(doc.metadata.description, 'Explicit');
+});
+
+test('processFile truncates derived descriptions to 160 characters on a word boundary', async () => {
+  const content = `# Guide\n\n${'word '.repeat(60)}`;
+  const doc = await sharedProcessor.processFile('/docs/guide.md', '/docs', content);
+
+  assert.ok(doc.metadata.description.length <= 160);
+  assert.match(doc.metadata.description, /word…$/);
+});
+
+test('processFile leaves description empty when there is no prose', async () => {
+  const doc = await sharedProcessor.processFile('/docs/guide.md', '/docs', '# Guide\n\n- a\n- b\n');
+
+  assert.equal(doc.metadata.description, undefined);
+});

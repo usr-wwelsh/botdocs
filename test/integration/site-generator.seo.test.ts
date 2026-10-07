@@ -78,7 +78,7 @@ test('generated pages carry Open Graph and twitter card tags', async () => {
     assert.match(html, /<meta property="og:description" content="Site home">/);
     assert.match(html, /<meta property="og:type" content="website">/);
     assert.match(html, /<meta property="og:url" content="https:\/\/example\.com\/docs\/">/);
-    assert.match(html, /<meta name="twitter:card" content="summary">/);
+    assert.match(html, /<meta name="twitter:card" content="summary_large_image">/);
     assert.match(html, /<link rel="canonical" href="https:\/\/example\.com\/docs\/">/);
   } finally {
     site.cleanup();
@@ -124,6 +124,83 @@ test('attribution footer shows the logo and disappears with attribution:false', 
     await new SiteGenerator().generate(site.inputDir, site.outputDir, { ...defaultConfig, attribution: false });
     const off = readFileSync(join(site.outputDir, 'README.html'), 'utf-8');
     assert.doesNotMatch(off, /botdocs-logo/);
+  } finally {
+    site.cleanup();
+  }
+});
+
+test('baseUrl enables a logo-based social card image', async () => {
+  const site = makeDocsSite();
+  try {
+    await new SiteGenerator().generate(site.inputDir, site.outputDir, {
+      ...defaultConfig,
+      title: 'My Docs',
+      baseUrl: 'https://example.com/docs/',
+    });
+    assert.ok(existsSync(join(site.outputDir, 'assets', 'og.png')));
+    const html = readFileSync(join(site.outputDir, 'guides', 'setup.html'), 'utf-8');
+    assert.match(html, /<meta property="og:image" content="https:\/\/example\.com\/docs\/assets\/og\.png">/);
+    assert.match(html, /<meta name="twitter:image" content="https:\/\/example\.com\/docs\/assets\/og\.png">/);
+    assert.match(html, /<meta property="og:image:width" content="1200">/);
+    assert.match(html, /<meta property="og:site_name" content="My Docs">/);
+  } finally {
+    site.cleanup();
+  }
+});
+
+test('without baseUrl there is no og:image and the card stays summary', async () => {
+  const site = makeDocsSite();
+  try {
+    await new SiteGenerator().generate(site.inputDir, site.outputDir, defaultConfig);
+    const html = readFileSync(join(site.outputDir, 'README.html'), 'utf-8');
+    assert.doesNotMatch(html, /og:image/);
+    assert.doesNotMatch(html, /twitter:image/);
+  } finally {
+    site.cleanup();
+  }
+});
+
+test('page title is not repeated when it equals the site title', async () => {
+  const site = makeDocsSite();
+  try {
+    await new SiteGenerator().generate(site.inputDir, site.outputDir, { ...defaultConfig, title: 'Home' });
+    const html = readFileSync(join(site.outputDir, 'README.html'), 'utf-8');
+    assert.match(html, /<title>Home<\/title>/);
+    assert.match(html, /<meta property="og:title" content="Home">/);
+  } finally {
+    site.cleanup();
+  }
+});
+
+test('meta attributes escape quotes in descriptions', async () => {
+  const site = makeDocsSite();
+  try {
+    writeFileSync(join(site.inputDir, 'q.md'), '---\ndescription: say "hi" & <go>\n---\n# Q\n');
+    await new SiteGenerator().generate(site.inputDir, site.outputDir, defaultConfig);
+    const html = readFileSync(join(site.outputDir, 'q.html'), 'utf-8');
+    assert.match(html, /<meta name="description" content="say &quot;hi&quot; &amp;">/);
+  } finally {
+    site.cleanup();
+  }
+});
+
+test('baseUrl adds JSON-LD structured data with the canonical url', async () => {
+  const site = makeDocsSite();
+  try {
+    await new SiteGenerator().generate(site.inputDir, site.outputDir, {
+      ...defaultConfig,
+      title: 'My Docs',
+      baseUrl: 'https://example.com/docs/',
+    });
+    const html = readFileSync(join(site.outputDir, 'guides', 'setup.html'), 'utf-8');
+    const match = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/);
+    assert.ok(match);
+    const data = JSON.parse(match[1]);
+    assert.equal(data['@type'], 'TechArticle');
+    assert.equal(data.headline, 'Setup');
+    assert.equal(data.description, 'How to install');
+    assert.equal(data.url, 'https://example.com/docs/guides/setup.html');
+    assert.equal(data.image, 'https://example.com/docs/assets/og.png');
   } finally {
     site.cleanup();
   }
