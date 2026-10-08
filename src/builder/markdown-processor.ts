@@ -1,4 +1,4 @@
-import MarkdownIt from 'markdown-it';
+import MarkdownIt, { type MarkdownIt as MarkdownItInstance } from 'markdown-it';
 import anchor from 'markdown-it-anchor';
 import toc from 'markdown-it-toc-done-right';
 import alerts from 'markdown-it-github-alerts';
@@ -13,7 +13,7 @@ import { ProcessedDocument, DocumentMetadata } from '../types/document.js';
 import { relative, basename, dirname } from 'path';
 
 export class MarkdownProcessor {
-  private md: MarkdownIt;
+  private md: MarkdownItInstance;
   private highlighter: Promise<Highlighter | null> | null = null;
 
   constructor() {
