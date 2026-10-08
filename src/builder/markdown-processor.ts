@@ -8,7 +8,7 @@ import { full as emoji } from 'markdown-it-emoji';
 import sub from 'markdown-it-sub';
 import sup from 'markdown-it-sup';
 import { BundledLanguage, bundledLanguages, createHighlighter, Highlighter } from 'shiki';
-import matter from 'gray-matter';
+import { parseFrontMatter } from './front-matter.js';
 import { ProcessedDocument, DocumentMetadata } from '../types/document.js';
 import { relative, basename, dirname } from 'path';
 
@@ -154,7 +154,7 @@ export class MarkdownProcessor {
     const highlighter = await this.setupShiki();
 
     // Parse front matter
-    const { data: metadata, content: markdownContent } = matter(content);
+    const { data: metadata, content: markdownContent } = parseFrontMatter(content);
     if (highlighter) await this.loadFenceLanguages(highlighter, markdownContent);
 
     // Convert markdown to HTML
