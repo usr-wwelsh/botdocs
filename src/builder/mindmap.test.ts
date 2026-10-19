@@ -49,3 +49,9 @@ test('renderMindmapSVG rejects a mindmap with no nodes', () => {
 test('renderMindmapSVG rejects multiple roots', () => {
   assert.throws(() => renderMindmapSVG('mindmap\n  a\n  b'));
 });
+
+test('renderMindmapSVG centers the root horizontally in the viewBox', () => {
+  const svg = renderMindmapSVG('mindmap\n  root((Docs))\n    A\n      a very long leaf label that widens the right side\n    B');
+  const [minX, , width] = svg.match(/viewBox="([^"]+)"/)![1].split(' ').map(Number);
+  assert.equal(minX + width / 2, 0);
+});

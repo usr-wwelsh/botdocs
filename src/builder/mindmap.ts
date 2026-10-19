@@ -109,8 +109,9 @@ export const renderMindmapSVG = (source: string): string => {
   const nodes: MindNode[] = [];
   walk(root, (node) => nodes.push(node));
 
-  const minX = Math.min(...nodes.map((n) => n.x)) - PAD;
-  const maxX = Math.max(...nodes.map((n) => n.x + n.w)) + PAD;
+  const reach = Math.ceil(Math.max(...nodes.map((n) => Math.max(-n.x, n.x + n.w))) + PAD);
+  const minX = -reach;
+  const maxX = reach;
   const minY = Math.min(...nodes.map((n) => n.y - NODE_H / 2)) - PAD;
   const maxY = Math.max(...nodes.map((n) => n.y + NODE_H / 2)) + PAD;
   const leftSide = new Set<MindNode>();
