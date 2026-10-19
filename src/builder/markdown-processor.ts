@@ -14,6 +14,11 @@ import { parseFrontMatter } from './front-matter.js';
 import { ProcessedDocument, DocumentMetadata } from '../types/document.js';
 import { relative, basename, dirname } from 'path';
 
+const EXPAND_BUTTON =
+  '<button type="button" class="mermaid-expand" aria-label="Expand diagram">' +
+  '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>' +
+  '</button>';
+
 export class MarkdownProcessor {
   private md: MarkdownItInstance;
   private highlighter: Promise<Highlighter | null> | null = null;
@@ -47,7 +52,7 @@ export class MarkdownProcessor {
                 fg: 'var(--text-primary)',
                 transparent: true,
               });
-          return `<figure class="mermaid">${svg}</figure>\n`;
+          return `<figure class="mermaid">${EXPAND_BUTTON}${svg}</figure>\n`;
         } catch {
           return `<pre><code>${this.escapeHtml(token.content)}</code></pre>\n`;
         }

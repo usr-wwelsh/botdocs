@@ -161,8 +161,8 @@ export async function build(options: BuildOptions): Promise<void> {
   // Determine which theme to use
   const selectedTheme = config.theme || defaultConfig.theme || 'classic';
 
-  // Combine CSS files: base styles + selected theme + chat
-  const cssFiles = ['themes.css', 'chat.css'];
+  // Combine CSS files: base styles + diagrams + selected theme + chat
+  const cssFiles = ['themes.css', 'diagrams.css', 'chat.css'];
   let bundledCss = '';
 
   for (const cssFile of cssFiles) {

@@ -148,3 +148,8 @@ test('render turns a mermaid mindmap fence into inline SVG', () => {
   assert.match(html, /<svg[\s>]/);
   assert.match(html, />Guides</);
 });
+
+test('render adds an expand button to a mermaid figure', () => {
+  const html = new MarkdownProcessor().render('```mermaid\nmindmap\n  root((Docs))\n    Guides\n```');
+  assert.match(html, /<figure class="mermaid"><button type="button" class="mermaid-expand" aria-label="Expand diagram">/);
+});

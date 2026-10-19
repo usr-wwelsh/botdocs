@@ -4,6 +4,7 @@
 
 import { initTheme } from './theme/dark-mode.js';
 import { initNavigation } from './navigation.js';
+import { initDiagrams } from './diagrams.js';
 
 // Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', () => {
@@ -12,6 +13,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Initialize navigation
   initNavigation();
+
+  initDiagrams();
 
   // Lazy load chat if enabled
   const chatWidget = document.getElementById('chat-widget');

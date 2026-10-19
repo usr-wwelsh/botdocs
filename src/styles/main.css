@@ -553,13 +553,3 @@ img {
     font-size: 1.5rem;
   }
 }
-
-figure.mermaid {
-  margin: 1.5rem 0;
-  overflow-x: auto;
-}
-
-figure.mermaid svg {
-  max-width: 100%;
-  height: auto;
-}

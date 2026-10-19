@@ -1,0 +1,82 @@
+figure.mermaid {
+  position: relative;
+  margin: 1.5rem 0;
+}
+
+figure.mermaid > svg {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+}
+
+.mermaid-expand,
+.mermaid-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  color: var(--text-secondary);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.mermaid-expand {
+  position: absolute;
+  top: 0;
+  right: 0;
+  opacity: 0.6;
+}
+
+figure.mermaid:hover .mermaid-expand,
+.mermaid-expand:focus-visible {
+  opacity: 1;
+}
+
+.mermaid-expand:hover,
+.mermaid-close:hover {
+  color: var(--text-primary);
+  border-color: var(--text-secondary);
+}
+
+.mermaid-modal {
+  width: 100vw;
+  max-width: 100vw;
+  height: 100vh;
+  max-height: 100vh;
+  padding: 0;
+  border: 0;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+}
+
+.mermaid-modal::backdrop {
+  background: rgb(0 0 0 / 0.6);
+}
+
+.mermaid-modal-body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 3rem 1.5rem 1.5rem;
+  box-sizing: border-box;
+}
+
+.mermaid-modal-body > svg {
+  width: 100%;
+  height: 100%;
+}
+
+.mermaid-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 2rem;
+  height: 2rem;
+  font-size: 1.5rem;
+  line-height: 1;
+}
