@@ -125,3 +125,26 @@ test('processFile leaves description empty when there is no prose', async () => 
 
   assert.equal(doc.metadata.description, undefined);
 });
+
+test('render turns a mermaid fence into inline SVG', () => {
+  const html = new MarkdownProcessor().render('```mermaid\ngraph TD\n  A[Start] --> B[End]\n```');
+  assert.match(html, /<svg[\s>]/);
+  assert.doesNotMatch(html, /language-mermaid/);
+});
+
+test('render emits no script for a mermaid fence', () => {
+  const html = new MarkdownProcessor().render('```mermaid\ngraph TD\n  A --> B\n```');
+  assert.doesNotMatch(html, /<script/);
+});
+
+test('render falls back to a code block when mermaid source is invalid', () => {
+  const html = new MarkdownProcessor().render('```mermaid\nnot a diagram at all\n```');
+  assert.doesNotMatch(html, /<svg[\s>]/);
+  assert.match(html, /not a diagram at all/);
+});
+
+test('render turns a mermaid mindmap fence into inline SVG', () => {
+  const html = new MarkdownProcessor().render('```mermaid\nmindmap\n  root((Docs))\n    Guides\n    Reference\n```');
+  assert.match(html, /<svg[\s>]/);
+  assert.match(html, />Guides</);
+});

@@ -7,6 +7,8 @@ import footnote from 'markdown-it-footnote';
 import { full as emoji } from 'markdown-it-emoji';
 import sub from 'markdown-it-sub';
 import sup from 'markdown-it-sup';
+import { renderMermaidSVG } from 'beautiful-mermaid';
+import { renderMindmapSVG } from './mindmap.js';
 import { BundledLanguage, bundledLanguages, createHighlighter, Highlighter } from 'shiki';
 import { parseFrontMatter } from './front-matter.js';
 import { ProcessedDocument, DocumentMetadata } from '../types/document.js';
@@ -32,6 +34,26 @@ export class MarkdownProcessor {
     })
       // Enable strikethrough (built-in feature)
       .enable('strikethrough');
+
+    const fence = this.md.renderer.rules.fence!;
+    this.md.renderer.rules.fence = (tokens, idx, options, env, self) => {
+      const token = tokens[idx];
+      if (token.info.trim() === 'mermaid') {
+        try {
+          const svg = /^mindmap\s*(\n|$)/.test(token.content.trimStart())
+            ? renderMindmapSVG(token.content)
+            : renderMermaidSVG(token.content, {
+                bg: 'var(--bg-primary)',
+                fg: 'var(--text-primary)',
+                transparent: true,
+              });
+          return `<figure class="mermaid">${svg}</figure>\n`;
+        } catch {
+          return `<pre><code>${this.escapeHtml(token.content)}</code></pre>\n`;
+        }
+      }
+      return fence(tokens, idx, options, env, self);
+    };
 
     // Add anchor plugin for heading links
     this.md.use(anchor, {
